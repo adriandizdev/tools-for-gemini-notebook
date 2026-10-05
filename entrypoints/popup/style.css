@@ -1,0 +1,27 @@
+body {
+  width: 260px;
+  margin: 0;
+  padding: 16px;
+  font: 14px/1.4 system-ui, sans-serif;
+}
+
+h1 {
+  margin: 0 0 12px;
+  font-size: 15px;
+}
+
+button {
+  width: 100%;
+  padding: 8px;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: progress;
+}
+
+#status {
+  margin: 8px 0 0;
+  color: #b3261e;
+}
