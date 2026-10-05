@@ -1,7 +1,9 @@
 import 'katex/dist/katex.min.css';
+import katex from 'katex';
 import renderMathInElement from 'katex/contrib/auto-render';
 import './print.css';
 import { type Conversation, conversationStorageKey } from '@/utils/conversation';
+import { MATH_CLASS } from '@/utils/extract';
 import { sanitizeMessageHtml } from '@/utils/sanitize';
 
 const ROLE_LABEL = { user: 'Tú', assistant: 'NotebookLM' } as const;
@@ -39,8 +41,15 @@ async function main() {
     container.append(article);
   }
 
-  // Las fórmulas que ya vienen renderizadas por NotebookLM se conservan tal cual;
-  // esto solo renderiza el LaTeX que haya llegado como texto sin procesar.
+  // Las fórmulas llegan como LaTeX (extraído de data-math) y se renderizan con el
+  // KaTeX empaquetado, que coincide con el CSS y las fuentes cargados arriba.
+  for (const el of container.querySelectorAll<HTMLElement>(`.${MATH_CLASS}`)) {
+    katex.render(el.textContent ?? '', el, {
+      displayMode: el.dataset.display === 'true',
+      throwOnError: false,
+    });
+  }
+  // Red de seguridad para LaTeX que haya llegado como texto suelto.
   renderMathInElement(container, { ignoredClasses: ['katex'], throwOnError: false });
 
   // Esperar a las fuentes de KaTeX para que no se impriman con la fuente de reserva.

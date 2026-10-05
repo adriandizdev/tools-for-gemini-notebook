@@ -53,6 +53,11 @@ header h1 {
   break-after: avoid;
 }
 
+/* NotebookLM usa div.paragraph en lugar de <p>. */
+.message__body .paragraph {
+  margin: 0 0 0.6em;
+}
+
 .message--user .message__body {
   padding: 8px 12px;
   border-radius: 8px;

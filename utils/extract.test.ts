@@ -1,49 +1,62 @@
 import { describe, expect, it } from 'vitest';
-import { extractConversation } from './extract';
-import { SELECTORS } from './selectors';
+import { MATH_CLASS, extractConversation } from './extract';
+import fixtureHtml from './__fixtures__/notebooklm-chat.html?raw';
 
-const cls = (selector: string) => selector.replace(/^\./, '');
-
-function makeDocument(body: string): Document {
-  const doc = document.implementation.createHTMLDocument('Mi cuaderno');
-  doc.body.innerHTML = body;
+/** Carga un recorte real del DOM de NotebookLM. */
+function loadFixture(): Document {
+  const doc = document.implementation.createHTMLDocument('NotebookLM');
+  doc.body.innerHTML = fixtureHtml;
   return doc;
 }
 
-describe('extractConversation', () => {
-  it('extrae los mensajes en orden y con su rol', () => {
-    const doc = makeDocument(`
-      <div class="${cls(SELECTORS.userMessage)}"><div class="${cls(SELECTORS.messageContent)}">¿Qué es la entropía?</div></div>
-      <div class="${cls(SELECTORS.assistantMessage)}"><div class="${cls(SELECTORS.messageContent)}"><p>Es una medida…</p></div></div>
-    `);
+/** Parsea el HTML de un mensaje para poder consultarlo. */
+function parse(html: string): HTMLElement {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  return div;
+}
 
-    const { title, messages } = extractConversation(doc);
+describe('extractConversation (DOM real de NotebookLM)', () => {
+  const conversation = extractConversation(loadFixture());
+  const [user, assistant] = conversation.messages;
 
-    expect(title).toBe('Mi cuaderno');
-    expect(messages).toEqual([
-      { role: 'user', html: '¿Qué es la entropía?' },
-      { role: 'assistant', html: '<p>Es una medida…</p>' },
+  it('extrae el título del cuaderno y los mensajes con su rol', () => {
+    expect(conversation.title).toBe('Estadistica');
+    expect(conversation.messages.map((m) => m.role)).toEqual(['user', 'assistant']);
+    expect(user!.html).toContain('Prepara una bateria de preguntas tipo test');
+  });
+
+  it('no incluye el resumen del cuaderno ni los separadores de fecha', () => {
+    const all = conversation.messages.map((m) => m.html).join('');
+    expect(all).not.toContain('fundamentos de la estadística');
+    expect(all).not.toContain('martes, 24 de febrero');
+  });
+
+  it('reduce cada fórmula a su LaTeX original', () => {
+    const body = parse(assistant!.html);
+    const formulas = [...body.querySelectorAll<HTMLElement>(`.${MATH_CLASS}`)];
+
+    expect(formulas.map((f) => f.textContent)).toEqual([
+      '(A \\cup B)^c',
+      'z = \\frac{x - \\mu}{\\sigma}',
+      '\\sqrt{\\lambda}',
     ]);
+    expect(formulas.every((f) => f.dataset.display === 'false')).toBe(true);
+    expect(body.querySelector('.katex, img')).toBeNull();
   });
 
-  it('conserva el HTML de las fórmulas y elimina los controles de la interfaz', () => {
-    const formula = '<span class="katex"><math><mi>x</mi></math><span aria-hidden="true">x</span></span>';
-    const doc = makeDocument(`
-      <div class="${cls(SELECTORS.assistantMessage)}">
-        <div class="${cls(SELECTORS.messageContent)}">${formula}<button>Copiar</button></div>
-      </div>
-    `);
-
-    const [message] = extractConversation(doc).messages;
-
-    expect(message).toBeDefined();
-    expect(message!.html).toContain('<span class="katex">');
-    expect(message!.html).toContain('<math>');
-    expect(message!.html).not.toContain('Copiar');
+  it('elimina citas, botones, comentarios y atributos de Angular', () => {
+    const html = assistant!.html;
+    for (const noise of ['citation-marker', 'mat-icon', 'more_horiz', 'Guardar en una nota', 'Copiar respuesta', '_ngcontent', '_nghost', 'jslog', 'data-start-index', '<!--']) {
+      expect(html).not.toContain(noise);
+    }
   });
 
-  it('ignora mensajes vacíos', () => {
-    const doc = makeDocument(`<div class="${cls(SELECTORS.assistantMessage)}"><button>…</button></div>`);
-    expect(extractConversation(doc).messages).toEqual([]);
+  it('conserva el texto y el formato de la respuesta', () => {
+    const body = parse(assistant!.html);
+    expect(body.querySelectorAll('.paragraph')).toHaveLength(3);
+    expect(body.querySelector('b')?.textContent).toBe('Tema 1: Conceptos y términos');
+    expect(body.textContent).toContain('Respuesta correcta: a');
+    expect(body.textContent).toContain('Respuesta correcta: b');
   });
 });

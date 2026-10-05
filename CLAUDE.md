@@ -26,14 +26,17 @@ Si `tsc` se queja de tipos o globals de WXT (`defineContentScript`, `browser`), 
 Flujo de exportación, repartido entre tres contextos de la extensión:
 
 1. **Popup** (`entrypoints/popup/`): al pulsar el botón, envía `EXTRACT_CONVERSATION` al content script de la pestaña activa.
-2. **Content script** (`entrypoints/content.ts`, solo en `notebooklm.google.com`): responde con `extractConversation()`, que clona el **HTML ya renderizado** de cada mensaje (fórmulas incluidas) en vez de texto plano.
+2. **Content script** (`entrypoints/content.ts`, solo en `notebooklm.google.com`): responde con `extractConversation()`, que clona el HTML de cada mensaje, quita la interfaz (citas, botones, iconos), los comentarios y los atributos de Angular, y **sustituye cada fórmula por su LaTeX original** (`<span class="math-tex" data-display>`).
 3. El popup guarda la conversación en `browser.storage.session` bajo `conversationStorageKey(id)` y abre `print.html?id=…`.
-4. **Página de impresión** (`entrypoints/print/`, página no listada): lee y borra la entrada de storage, sanea cada mensaje con DOMPurify, carga el CSS y las fuentes de KaTeX empaquetados, renderiza con `katex/contrib/auto-render` solo el LaTeX que haya llegado sin procesar, espera a `document.fonts.ready` y llama a `window.print()`.
+4. **Página de impresión** (`entrypoints/print/`, página no listada): lee y borra la entrada de storage, sanea cada mensaje con DOMPurify, renderiza cada `.math-tex` con el KaTeX empaquetado (más `auto-render` como red de seguridad para LaTeX suelto), espera a `document.fonts.ready` y llama a `window.print()`.
 
 Puntos clave:
 
-- **`utils/selectors.ts` es el único sitio acoplado al DOM de NotebookLM.** Los selectores actuales **no están verificados** contra la página real. Si la extracción no encuentra mensajes, el fallo casi siempre está ahí. Los tests construyen su DOM a partir de esas mismas constantes, así que pasar los tests no garantiza que funcione en NotebookLM.
-- **El saneado es obligatorio:** la página de impresión tiene acceso a las APIs de la extensión y recibe HTML de una web externa. La configuración de DOMPurify debe seguir permitiendo MathML, SVG y atributos `style`/`class`, porque KaTeX los necesita.
+- **`utils/selectors.ts` es el único sitio acoplado al DOM de NotebookLM.** Los selectores se verificaron contra la página real el 2026-10-05. `utils/__fixtures__/notebooklm-chat.html` es un recorte real de ese DOM y es la base de los tests de extracción. Si Google cambia la UI, actualiza los selectores y el fixture juntos.
+- **Las fórmulas viajan como LaTeX, no como HTML de KaTeX.** NotebookLM renderiza con KaTeX (solo salida HTML) y guarda el LaTeX en el atributo `data-math`. Volver a renderizar evita desajustes entre la versión de KaTeX de Google y el CSS empaquetado, recupera MathML y reduce mucho el tamaño. Esto último importa porque el HTML original ronda los 400 KB por respuesta y `storage.session` tiene un límite de unos 10 MB.
+- **El saneado es obligatorio:** la página de impresión tiene acceso a las APIs de la extensión y recibe HTML de una web externa. La configuración de DOMPurify debe seguir permitiendo MathML, SVG, `img` con `data:` y atributos `style`/`class`/`data-*`.
+- NotebookLM usa `div.paragraph` en lugar de `<p>`, y `<b>` en lugar de encabezados.
+- Sin verificar todavía: si NotebookLM virtualiza los mensajes en conversaciones largas, y cómo renderiza listas, tablas y fórmulas en bloque.
 - **Las librerías van empaquetadas.** MV3 prohíbe cargar código remoto, así que KaTeX (JS, CSS y fuentes) se incluye vía npm/Vite.
 - El estilo del PDF (márgenes, saltos de página que no parten fórmulas ni tablas) está en `entrypoints/print/print.css`.
 - Los tests usan **jsdom**, no happy-dom: DOMPurify no sanea correctamente bajo happy-dom.

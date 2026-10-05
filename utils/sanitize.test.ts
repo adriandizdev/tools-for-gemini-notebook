@@ -20,4 +20,16 @@ describe('sanitizeMessageHtml', () => {
     expect(html).toContain('<math>');
     expect(html).toContain('<svg');
   });
+
+  it('conserva los marcadores de fórmula extraídos', () => {
+    const html = sanitizeMessageHtml('<span class="math-tex" data-display="false">\\frac{a}{b}</span>');
+    expect(html).toBe('<span class="math-tex" data-display="false">\\frac{a}{b}</span>');
+  });
+
+  it('conserva las imágenes SVG en data: que KaTeX usa para raíces', () => {
+    const html = sanitizeMessageHtml(
+      '<img class="katex-svg" src="data:image/svg+xml;utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22/%3E">',
+    );
+    expect(html).toContain('src="data:image/svg+xml;utf8,');
+  });
 });
