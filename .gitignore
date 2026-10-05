@@ -2,3 +2,5 @@ node_modules
 .output
 .wxt
 *.log
+# Páginas guardadas del navegador: pesadas y con datos de la cuenta
+examples/

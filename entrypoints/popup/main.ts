@@ -21,16 +21,19 @@ button.addEventListener('click', async () => {
 
 async function exportActiveTab() {
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-  // La URL solo es visible para pestañas cubiertas por los permisos de host.
-  if (!tab?.id || !tab.url?.startsWith('https://notebooklm.google.com/')) {
-    throw new Error('Abre una conversación de NotebookLM en la pestaña actual.');
-  }
+
+  // Los dominios admitidos se definen solo en entrypoints/content.ts: si el content
+  // script no responde, la pestaña no es un cuaderno o se abrió antes de instalar la extensión.
+  const notANotebook = new Error(
+    'Abre una conversación de Gemini Notebook (NotebookLM) en esta pestaña. Si ya la tienes abierta, recarga la página.',
+  );
+  if (tab?.id === undefined) throw notANotebook;
 
   let conversation: Conversation;
   try {
     conversation = await browser.tabs.sendMessage(tab.id, { type: EXTRACT_CONVERSATION });
   } catch {
-    throw new Error('No se pudo leer la página. Recarga la pestaña de NotebookLM e inténtalo de nuevo.');
+    throw notANotebook;
   }
   if (!conversation?.messages.length) {
     throw new Error('No se encontraron mensajes en la conversación.');
