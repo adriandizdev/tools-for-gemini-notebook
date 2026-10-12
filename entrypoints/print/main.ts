@@ -28,16 +28,22 @@ async function main() {
   document.querySelector('#title')!.textContent = conversation.title;
   document.querySelector('#meta')!.textContent = new Date().toLocaleString();
 
+  // Si se exportaron solo las respuestas, repetir "NotebookLM" en cada bloque no aporta nada.
+  const showRoles = conversation.messages.some((m) => m.role === 'user');
+
   for (const message of conversation.messages) {
     const article = document.createElement('article');
     article.className = `message message--${message.role}`;
-    const label = document.createElement('div');
-    label.className = 'message__role';
-    label.textContent = ROLE_LABEL[message.role];
+    if (showRoles) {
+      const label = document.createElement('div');
+      label.className = 'message__role';
+      label.textContent = ROLE_LABEL[message.role];
+      article.append(label);
+    }
     const body = document.createElement('div');
     body.className = 'message__body';
     body.innerHTML = sanitizeMessageHtml(message.html);
-    article.append(label, body);
+    article.append(body);
     container.append(article);
   }
 

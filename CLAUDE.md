@@ -27,7 +27,7 @@ Flujo de exportación, repartido entre tres contextos de la extensión:
 
 1. **Popup** (`entrypoints/popup/`): al pulsar el botón, envía `EXTRACT_CONVERSATION` al content script de la pestaña activa.
 2. **Content script** (`entrypoints/content.ts`): responde con `extractConversation()`, que clona el HTML de cada mensaje, quita la interfaz (citas, botones, iconos), los comentarios y los atributos de Angular, y **sustituye cada fórmula por su LaTeX original** (`<span class="math-tex" data-display>`).
-3. El popup guarda la conversación en `browser.storage.session` bajo `conversationStorageKey(id)` y abre `print.html?id=…`.
+3. El popup filtra los mensajes según la casilla "Incluir mis preguntas" (`filterConversation`; la preferencia se recuerda en `browser.storage.local` bajo `EXPORT_OPTIONS_KEY`), guarda la conversación en `browser.storage.session` bajo `conversationStorageKey(id)` y abre `print.html?id=…`. Si solo hay respuestas, la página de impresión omite las etiquetas de rol.
 4. **Página de impresión** (`entrypoints/print/`, página no listada): lee y borra la entrada de storage, sanea cada mensaje con DOMPurify, renderiza cada `.math-tex` con el KaTeX empaquetado (más `auto-render` como red de seguridad para LaTeX suelto), espera a `document.fonts.ready` y llama a `window.print()`.
 
 Puntos clave:
