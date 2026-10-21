@@ -63,4 +63,7 @@ async function main() {
   window.print();
 }
 
-main();
+main().catch((error: unknown) => {
+  document.querySelector('#conversation')!.textContent =
+    `No se ha podido preparar el PDF: ${error instanceof Error ? error.message : String(error)}`;
+});

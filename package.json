@@ -11,7 +11,8 @@
     "compile": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "postinstall": "wxt prepare"
+    "postinstall": "wxt prepare",
+    "lint": "oxlint --type-aware --deny-warnings"
   },
   "dependencies": {
     "dompurify": "^3.4.16",
@@ -19,6 +20,8 @@
   },
   "devDependencies": {
     "jsdom": "^28.1.0",
+    "oxlint": "^1.89.0",
+    "oxlint-tsgolint": "^7.0.2004",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3",
     "wxt": "^0.21.4"

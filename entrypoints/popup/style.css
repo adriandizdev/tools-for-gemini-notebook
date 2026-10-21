@@ -33,3 +33,24 @@ button:disabled {
   margin: 8px 0 0;
   color: #b3261e;
 }
+
+#notebook-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 12px 0 0;
+}
+
+select {
+  width: 100%;
+  padding: 6px;
+  font: inherit;
+}
+
+#status.success {
+  color: #146c2e;
+}
+
+#status.info {
+  color: inherit;
+}

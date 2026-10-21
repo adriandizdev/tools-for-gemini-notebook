@@ -2,16 +2,29 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>NotebookLM to PDF</title>
+    <title>NotebookLM Tools</title>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <h1>NotebookLM to PDF</h1>
-    <label class="option">
-      <input type="checkbox" id="include-user" checked />
-      Incluir mensajes del usuario
-    </label>
-    <button id="export">Exportar conversación a PDF</button>
+    <h1>NotebookLM Tools</h1>
+
+    <section id="export-section" hidden>
+      <label class="option">
+        <input type="checkbox" id="include-user" checked />
+        Incluir mensajes del usuario
+      </label>
+      <button id="export">Exportar conversación a PDF</button>
+    </section>
+
+    <section id="add-section" hidden>
+      <button id="add">Añadir a cuaderno</button>
+      <form id="notebook-form" hidden>
+        <label for="notebook">Cuaderno</label>
+        <select id="notebook" required></select>
+        <button id="confirm" type="submit">Confirmar</button>
+      </form>
+    </section>
+
     <p id="status" role="status"></p>
     <script type="module" src="./main.ts"></script>
   </body>

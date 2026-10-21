@@ -1,11 +1,11 @@
 import { EXTRACT_CONVERSATION } from '@/utils/conversation';
+import { NOTEBOOKLM_MATCHES } from '@/utils/domains';
 import { extractConversation } from '@/utils/extract';
 
 export default defineContentScript({
-  // NotebookLM ahora es "Gemini Notebook" (notebook.google.com); se mantiene el dominio antiguo.
-  matches: ['https://notebook.google.com/*', 'https://notebooklm.google.com/*'],
+  matches: NOTEBOOKLM_MATCHES,
   main() {
-    browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+    browser.runtime.onMessage.addListener((message: { type?: unknown } | undefined, _sender, sendResponse) => {
       if (message?.type === EXTRACT_CONVERSATION) {
         sendResponse(extractConversation());
       }
