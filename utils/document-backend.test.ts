@@ -97,6 +97,26 @@ describe('createDocumentBackend', () => {
     });
   });
 
+  it('REQ-003: descarga de la dirección que da `resolveUrl`', async () => {
+    let downloaded: RequestInfo | URL | undefined;
+    const fetchFn = ((input: RequestInfo | URL) => {
+      downloaded = input;
+      return Promise.resolve(pdf());
+    }) as typeof fetch;
+    const resolveUrl = () => Promise.resolve('https://cms.unir.net/file/1/esl-ES');
+    await createDocumentBackend(fakeClient().client, fetchFn, resolveUrl).addDocument('nb', memoria);
+    expect(downloaded).toBe('https://cms.unir.net/file/1/esl-ES');
+  });
+
+  it('REQ-003, CB-03: si no hay dirección, falla con su motivo sin tocar el cuaderno', async () => {
+    const { client, steps } = fakeClient();
+    const resolveUrl = () => Promise.reject(new Error('la sesión del campus ha caducado'));
+    await expect(createDocumentBackend(client, respond(pdf()), resolveUrl).addDocument('nb', memoria)).rejects.toThrow(
+      'la sesión del campus ha caducado',
+    );
+    expect(steps).toEqual([]);
+  });
+
   it('descarga sin las cookies del usuario', async () => {
     let init: RequestInit | undefined;
     const fetchFn = ((_input: RequestInfo | URL, options?: RequestInit) => {

@@ -32,8 +32,8 @@ describe('proposedName (RN-06)', () => {
 describe('sourceName (RN-07)', () => {
   const url = 'https://ejemplo.es/Informe_anual_2025.pdf';
 
-  it('CA-05: usa el nombre editado', () => expect(sourceName(' Memoria 2025 ', url)).toBe('Memoria 2025'));
-  it('CA-06: vuelve al propuesto si se deja vacío', () => expect(sourceName('  ', url)).toBe('Informe anual 2025'));
+  it('CA-05: usa el nombre editado', () => expect(sourceName(' Memoria 2025 ', proposedName(url))).toBe('Memoria 2025'));
+  it('CA-06: vuelve al propuesto si se deja vacío', () => expect(sourceName('  ', proposedName(url))).toBe('Informe anual 2025'));
 });
 
 describe('fileNameFromUrl', () => {

@@ -13,7 +13,8 @@ function showStatus(message: string, kind: StatusKind = 'error') {
   status.className = kind;
 }
 
-// El panel solo ofrece las acciones de la página activa (REQ-001 RF-11, RF-12, RF-16; REQ-002 RF-01, RF-20).
+// El panel solo ofrece las acciones de la página activa (REQ-001 RF-11, RF-12, RF-16; REQ-002 RF-01, RF-20;
+// REQ-003 RF-01, RF-02).
 // Con `activeTab`, `tab.url` llega al abrir el panel en cualquier web.
 browser.tabs
   .query({ active: true, currentWindow: true })
@@ -25,7 +26,7 @@ browser.tabs
     } else if (page.kind === 'video' || page.kind === 'playlist') {
       document.querySelector<HTMLElement>('#add-section')!.hidden = false;
       setupAdd(page, showStatus);
-    } else if ((page.kind === 'web' || page.kind === 'document') && tab?.id !== undefined) {
+    } else if ((page.kind === 'web' || page.kind === 'document' || page.kind === 'unir') && tab?.id !== undefined) {
       document.body.classList.add('documents');
       document.querySelector<HTMLElement>('#documents-section')!.hidden = false;
       setupDocuments(tab.id, page, showStatus);

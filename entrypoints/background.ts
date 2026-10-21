@@ -1,4 +1,4 @@
-import { addDocuments } from '@/utils/add-documents';
+import { type DocumentToAdd, addDocuments } from '@/utils/add-documents';
 import { addToNotebook } from '@/utils/add-sources';
 import { createDocumentBackend } from '@/utils/document-backend';
 import { NO_NOTEBOOKS, NOT_LOGGED_IN } from '@/utils/messages';
@@ -15,6 +15,8 @@ import {
   LIST_NOTEBOOKS,
   type ListNotebooksResponse,
 } from '@/utils/sources';
+import { TOPIC_NOT_DELIVERED, VISOR_TAB_CLOSED, topicPdfPath, topicPdfUrl } from '@/utils/unir';
+import { type VisorApiResult, callVisorApi } from '@/utils/unir-page';
 import { listPlaylistVideos } from '@/utils/youtube-playlist';
 
 // Las llamadas a NotebookLM y YouTube se hacen aquí (con las host permissions y las cookies
@@ -55,7 +57,7 @@ async function addDocumentsFromPopup(
 ) {
   let response: AddToNotebookResponse;
   try {
-    const backend = createDocumentBackend(createNotebookLmClient());
+    const backend = createDocumentBackend(createNotebookLmClient(), fetch, resolveDocumentUrl);
     response = await addDocuments(backend, notebook, documents, (url, status) => post({ type: 'status', url, status }));
   } catch (error) {
     response = { ok: false, addedAny: false, message: errorMessage(error) };
@@ -63,6 +65,25 @@ async function addDocumentsFromPopup(
   // Se recuerda aquí y no en el popup, que puede haberse cerrado (RN-10, RN-16).
   if (response.addedAny) await browser.storage.local.set({ [LAST_NOTEBOOK_KEY]: notebook.id }).catch(() => {});
   post({ type: 'done', response });
+}
+
+/** Los temas de UNIR se piden al visor desde su pestaña, con el token de la página (REQ-003, SUP-07). */
+async function resolveDocumentUrl(document: DocumentToAdd): Promise<string> {
+  if (!document.unirTopic) return document.url;
+  const { tabId, topicId } = document.unirTopic;
+  let result: VisorApiResult | undefined;
+  try {
+    const [injection] = await browser.scripting.executeScript({
+      target: { tabId },
+      func: callVisorApi,
+      args: ['POST', topicPdfPath(topicId)],
+    });
+    result = injection?.result;
+  } catch {
+    throw new Error(VISOR_TAB_CLOSED);
+  }
+  if (!result) throw new Error(TOPIC_NOT_DELIVERED);
+  return topicPdfUrl(result);
 }
 
 async function listNotebooks(): Promise<ListNotebooksResponse> {

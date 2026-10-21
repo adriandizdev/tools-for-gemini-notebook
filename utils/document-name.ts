@@ -33,7 +33,7 @@ export function proposedName(url: string): string {
   return name || FALLBACK_NAME;
 }
 
-/** RN-07: si el usuario deja el nombre vacío, se usa el propuesto. */
-export function sourceName(edited: string, url: string): string {
-  return edited.trim() || proposedName(url);
+/** RN-07 (REQ-003, RN-03): si el usuario deja el nombre vacío, se usa el propuesto. */
+export function sourceName(edited: string, proposed: string): string {
+  return edited.trim() || proposed;
 }

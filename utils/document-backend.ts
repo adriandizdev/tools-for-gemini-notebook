@@ -8,8 +8,16 @@ export const ACCESS_DENIED = 'la web exige iniciar sesión o deniega el acceso';
 export const NOT_FOUND = 'el documento ya no existe en la web';
 export const NOT_A_DOCUMENT = 'la web no ha devuelto el documento, sino una página';
 
-/** Une el cliente de NotebookLM y la descarga desde la web en lo que necesita `addDocuments`. */
-export function createDocumentBackend(client: NotebookLmClient, fetchFn: typeof fetch = fetch): DocumentBackend {
+/**
+ * Une el cliente de NotebookLM y la descarga desde la web en lo que necesita `addDocuments`.
+ * `resolveUrl` da la dirección de la que se descarga cada documento: la suya, salvo en los temas de
+ * UNIR, cuyo PDF hay que pedírselo antes al visor (REQ-003). Si falla, lanza el motivo de M-17.
+ */
+export function createDocumentBackend(
+  client: NotebookLmClient,
+  fetchFn: typeof fetch = fetch,
+  resolveUrl: (document: DocumentToAdd) => Promise<string> = (document) => Promise.resolve(document.url),
+): DocumentBackend {
   async function getNotebook(notebookId: string) {
     const notebook = (await client.listNotebooks()).find((n) => n.id === notebookId);
     if (!notebook) throw new Error('El cuaderno ya no existe en Gemini Notebook');
@@ -26,7 +34,7 @@ export function createDocumentBackend(client: NotebookLmClient, fetchFn: typeof 
     },
 
     async addDocument(notebookId, document) {
-      const content = await download(document, fetchFn);
+      const content = await download(await resolveUrl(document), fetchFn);
 
       // Gemini Notebook exige la extensión en el nombre del fichero; después se renombra la
       // fuente para que quede con el nombre del listado (RF-15).
@@ -55,10 +63,10 @@ export function createDocumentBackend(client: NotebookLmClient, fetchFn: typeof 
  * Descarga sin las cookies del usuario: los documentos que exigen sesión en la web quedan fuera
  * de esta iteración y fallan con su motivo (REQ-002, *Fuera de Alcance*).
  */
-async function download(document: DocumentToAdd, fetchFn: typeof fetch): Promise<Blob> {
+async function download(url: string, fetchFn: typeof fetch): Promise<Blob> {
   let response: Response;
   try {
-    response = await fetchFn(document.url, { credentials: 'omit' });
+    response = await fetchFn(url, { credentials: 'omit' });
   } catch {
     throw new Error(DOWNLOAD_FAILED);
   }

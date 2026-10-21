@@ -10,6 +10,10 @@ export interface DocumentCandidate {
   url: string;
   fileName: string;
   kind: DocumentKind;
+  /** Nombre propuesto, si no sale de la dirección: el título del tema de UNIR (REQ-003, RF-05). */
+  title?: string;
+  /** Solo los temas del visor de UNIR (REQ-003). */
+  unirTopicId?: string;
 }
 
 /**

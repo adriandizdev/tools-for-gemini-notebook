@@ -17,6 +17,8 @@ export interface DocumentToAdd {
   kind: DocumentKind;
   /** Nombre de la fuente: el editado, o el propuesto si se dejó vacío (RF-15, RN-07). */
   name: string;
+  /** Solo los temas del visor de UNIR: el PDF se pide al visor desde su pestaña (REQ-003). */
+  unirTopic?: { tabId: number; topicId: string };
 }
 
 /** Estado de cada documento del listado (RF-16). */

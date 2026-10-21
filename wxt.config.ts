@@ -5,7 +5,7 @@ export default defineConfig({
   manifest: {
     name: 'NotebookLM Tools',
     description:
-      'Amplía Gemini Notebook (NotebookLM): exporta conversaciones a PDF conservando las fórmulas y añade como fuentes vídeos de YouTube y documentos de cualquier web.',
+      'Amplía Gemini Notebook (NotebookLM): exporta conversaciones a PDF conservando las fórmulas y añade como fuentes vídeos de YouTube, documentos de cualquier web y temas del visor de UNIR.',
     // `activeTab` da la URL de la pestaña al abrir el panel y deja buscar en ella con `scripting`.
     permissions: ['storage', 'activeTab', 'scripting'],
     // Permiten leer la URL de la pestaña activa en estas páginas (el popup elige así sus acciones)

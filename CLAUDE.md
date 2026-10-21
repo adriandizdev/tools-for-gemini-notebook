@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Proyecto
 
-Extensión de Chrome (Manifest V3), "NotebookLM Tools", que amplía NotebookLM desde un único panel. Exporta conversaciones a PDF **conservando el formato de fórmulas y ecuaciones** y añade como fuentes de un cuaderno vídeos y listas de YouTube (`specs/REQ-001-…`) y los documentos PDF, Word y PowerPoint de cualquier web (`specs/REQ-002-…`). Está escrita en TypeScript con [WXT](https://wxt.dev) (sobre Vite). El PDF se genera con la impresión nativa de Chrome (`window.print()`), no con librerías de PDF; se eligió así por fidelidad de las fórmulas, a cambio de mostrar el diálogo de impresión.
+Extensión de Chrome (Manifest V3), "NotebookLM Tools", que amplía NotebookLM desde un único panel. Exporta conversaciones a PDF **conservando el formato de fórmulas y ecuaciones** y añade como fuentes de un cuaderno vídeos y listas de YouTube (`specs/REQ-001-…`) los documentos PDF, Word y PowerPoint de cualquier web (`specs/REQ-002-…`) y los temas del visor de UNIR (`specs/REQ-003-…`). Está escrita en TypeScript con [WXT](https://wxt.dev) (sobre Vite). El PDF se genera con la impresión nativa de Chrome (`window.print()`), no con librerías de PDF; se eligió así por fidelidad de las fórmulas, a cambio de mostrar el diálogo de impresión.
 
 ## Comandos
 
@@ -26,7 +26,7 @@ El linter es oxlint con `oxlint-tsgolint` y no ESLint: `typescript-eslint` no ad
 
 ## Arquitectura
 
-El popup (`entrypoints/popup/main.ts`) clasifica la URL de la pestaña activa con `classifyTab` (`utils/page.ts`) y muestra solo la acción que corresponde: exportar en `/notebook/…`, añadir en un vídeo o lista de YouTube, buscar documentos en cualquier otra web (o en un PDF abierto directamente), o el mensaje M-10 en las páginas de NotebookLM y YouTube sin acción. Los dominios de NotebookLM y YouTube se definen en `utils/domains.ts` y sirven a la vez de `matches` del content script y de `host_permissions`. En las demás webs, `tab.url` llega gracias a `activeTab`.
+El popup (`entrypoints/popup/main.ts`) clasifica la URL de la pestaña activa con `classifyTab` (`utils/page.ts`) y muestra solo la acción que corresponde: exportar en `/notebook/…`, añadir en un vídeo o lista de YouTube, buscar documentos en cualquier otra web (o en un PDF abierto directamente), listar los temas en el visor de UNIR, o el mensaje M-10 en las páginas de NotebookLM y YouTube sin acción. Los dominios de NotebookLM y YouTube se definen en `utils/domains.ts` y sirven a la vez de `matches` del content script y de `host_permissions`. En las demás webs, `tab.url` llega gracias a `activeTab`.
 
 ### Exportar a PDF
 
@@ -55,6 +55,20 @@ Flujo repartido entre tres contextos de la extensión:
 3. **Puerto `ADD_DOCUMENTS_PORT`** con el background, para recibir el estado de cada documento. Si el popup se cierra, el background termina igualmente y recuerda el último cuaderno usado.
 4. **`utils/add-documents.ts`**: reglas puras: cupo, ya presentes por nombre, fallos sueltos y elección del mensaje M-12 a M-18.
 5. **`utils/document-backend.ts`**: descarga el documento sin cookies (los documentos privados quedan fuera de alcance) y lo sube con el cliente de NotebookLM. Si la subida falla, borra la fuente. Al final la renombra para quitarle la extensión.
+
+### Añadir temas del visor de UNIR (REQ-003)
+
+Reutiliza todo REQ-002 (permiso, panel, puerto, `addDocuments`, mensajes). Cambia de dónde salen el listado y el PDF:
+
+1. `classifyTab` devuelve `unir` en `/asignaturas/{s}/mis-temas[/{t}]` de `UNIR_VISOR_HOST`; las demás páginas del visor, `none` (M-10). No se busca con `scanPage`.
+2. El popup inyecta `callVisorApi` (`utils/unir-page.ts`, **autocontenida**) para pedir `user-topics`; `utils/unir.ts` lo convierte en filas (título del tema como nombre, todas marcadas). La clave de cada fila es la dirección de la página del tema.
+3. Cada `DocumentToAdd` de un tema lleva `unirTopic: {tabId, topicId}`. Al añadirlo, el background inyecta `callVisorApi` en esa pestaña para obtener `downloadUrl` (`resolveDocumentUrl` → `createDocumentBackend(…, resolveUrl)`), y lo descarga sin credenciales como cualquier documento.
+
+**El token del campus nunca sale de la página** (SUP-07): la API solo se llama desde funciones inyectadas en la pestaña del visor. API verificada contra la página real el 2026-10-22:
+- Sin cookies: `Authorization: Bearer` con la clave `access_token` del `sessionStorage` (angular-oauth2-oidc). Sin token, 401.
+- `GET /api/v3/subjects/{id}/user-topics` → `{subjectTitle, topics[{topicId (número), title, groups}]}`, en el orden del visor. `topicId` es el mismo de la URL `/mis-temas/{topicId}`.
+- `POST /api/v1/topics/{topicId}/download` con `{}` → `{filename, downloadUrl, …}`; `downloadUrl` (cms.unir.net) se descarga sin cookies ni token y no trae `content-length`.
+- `utils/__fixtures__/unir/user-topics.json` tiene la forma real; solo los dos primeros temas son reales.
 
 Los textos al usuario están en `utils/messages.ts` y son los aprobados en la tabla 6.1 de cada spec: no se cambian sin cambiar la spec.
 

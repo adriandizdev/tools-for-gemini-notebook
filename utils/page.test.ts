@@ -20,6 +20,15 @@ describe('classifyTab', () => {
     ['https://example.com/docs/guia.pdf', { kind: 'document', url: 'https://example.com/docs/guia.pdf' }],
     // Un Word abierto en la pestaña no es un PDF abierto en el navegador: se busca como web.
     ['https://example.com/docs/guia.docx', { kind: 'web' }],
+    // REQ-003: en el visor de UNIR se listan los temas en lugar de buscar documentos.
+    [
+      'https://visorinteractivo.unir.net/asignaturas/3128028/mis-temas',
+      { kind: 'unir', subjectId: '3128028' },
+    ],
+    [
+      'https://visorinteractivo.unir.net/asignaturas/3128028/mis-temas/412?vista=1',
+      { kind: 'unir', subjectId: '3128028', topicId: '412' },
+    ],
   ])('%s', (url, expected) => {
     expect(classifyTab(url)).toEqual(expected);
   });
@@ -34,6 +43,9 @@ describe('classifyTab', () => {
     'https://notebook.google.com/',
     'https://www.youtube.com/channel/UCYO_jab_esuFRV4b17AJtAw',
     'file:///C:/docs/guia.pdf',
+    // REQ-003, SUP-02: las demás páginas del visor no tienen acción.
+    'https://visorinteractivo.unir.net/asignaturas/3128028/ejercicios-practicos',
+    'https://visorinteractivo.unir.net/',
   ])('no ofrece acciones en %s', (url) => {
     expect(classifyTab(url)).toEqual({ kind: 'none' });
   });

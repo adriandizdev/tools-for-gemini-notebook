@@ -1,0 +1,20 @@
+{
+  "subjectTitle": "Reutilización de software",
+  "topics": [
+    {
+      "topicId": 3128029,
+      "title": "Tema 1. Panorama general de la reutilización de software",
+      "groups": [{ "title": "Ideas clave", "sections": [] }, { "title": "A fondo", "sections": [] }]
+    },
+    {
+      "topicId": 3128169,
+      "title": "Tema 2. Introducción a los patrones de diseño",
+      "groups": [{ "title": "Ideas clave", "sections": [] }]
+    },
+    {
+      "topicId": 3128305,
+      "title": "Tema 3. Patrones creacionales",
+      "groups": [{ "title": "Ideas clave", "sections": [] }]
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import { documentKind } from './documents';
-import { NOTEBOOKLM_HOSTS, YOUTUBE_HOSTS } from './domains';
+import { NOTEBOOKLM_HOSTS, UNIR_VISOR_HOST, YOUTUBE_HOSTS } from './domains';
+import { parseVisorPath } from './unir';
 
 /** Qué acciones ofrece el panel según la página de la pestaña activa. */
 export type PageKind =
@@ -10,6 +11,8 @@ export type PageKind =
   | { kind: 'web' }
   /** Un PDF abierto directamente en la pestaña (REQ-002, RF-04). */
   | { kind: 'document'; url: string }
+  /** La página de una asignatura o de un tema del visor de UNIR (REQ-003, RF-01 y RF-02). */
+  | { kind: 'unir'; subjectId: string; topicId?: string }
   | { kind: 'none' };
 
 /**
@@ -37,6 +40,12 @@ export function classifyTab(url: string | undefined): PageKind {
     if (parsed.pathname === '/playlist' && listId) return { kind: 'playlist', listId };
     // En YouTube no se buscan documentos (REQ-002, RF-20).
     return { kind: 'none' };
+  }
+
+  if (parsed.hostname === UNIR_VISOR_HOST) {
+    // En el visor de UNIR el listado de temas sustituye a la búsqueda de documentos (REQ-003, RF-04).
+    const visor = parseVisorPath(parsed.pathname);
+    return visor ? { kind: 'unir', ...visor } : { kind: 'none' };
   }
 
   if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return { kind: 'none' };
