@@ -4,8 +4,8 @@
 |---|---|
 | **ID** | REQ-002 |
 | **Estado** | Borrador |
-| **Versión** | 1.2 |
-| **Fecha** | 2026-10-21 |
+| **Versión** | 1.3 |
+| **Fecha** | 2026-10-22 |
 | **Depende de** | REQ-001 |
 
 ## 1. Contexto
@@ -14,6 +14,7 @@ Mientras navega por cualquier web, el usuario de la extensión puede ver los doc
 
 - **Comportamiento actual**: en una web que no es YouTube ni NotebookLM, el panel muestra el mensaje M-10 ("No hay acciones disponibles en esta página"). Para añadir un documento de una web como fuente, el usuario lo descarga, abre NotebookLM, entra en el cuaderno y lo sube.
 - **Relación con REQ-001**: este requisito reutiliza la elección del cuaderno destino de REQ-001 y los mensajes M-08, M-09 y M-10. Modifica dos puntos de REQ-001: RF-13, porque M-10 pasa a mostrarse solo en las páginas sin documentos, y la exclusión "Importar como fuente contenido de webs distintas de YouTube" de su sección *Fuera de Alcance*.
+- **Relación con REQ-003**: en el visor de contenidos de UNIR, el listado de temas de REQ-003 sustituye a la búsqueda de documentos de este requisito. REQ-003 reutiliza el permiso de acceso a las webs, las reglas de añadir y los mensajes M-08 a M-18.
 - **Medida de éxito**: un documento enlazado en una web pública se añade al cuaderno elegido con el nombre editado, y cada caso de error muestra su mensaje sin dejar fuentes a medias.
 
 ## 3. Requisitos Funcionales (Sintaxis EARS)
@@ -37,7 +38,7 @@ Mientras navega por cualquier web, el usuario de la extensión puede ver los doc
 - **RF-17** (Evento): Cuando un único documento se añade correctamente, el sistema debe mostrar el mensaje M-12.
 - **RF-18** (Evento): Cuando "Añadir seleccionados" termina con todos los documentos añadidos, el sistema debe mostrar el mensaje M-13.
 - **RF-19** (Evento): Cuando "Añadir seleccionados" termina con algún documento ya presente o no añadido, el sistema debe mostrar el mensaje M-14.
-- **RF-20** (Estado): Mientras la pestaña activa muestre NotebookLM o YouTube, el sistema debe ocultar el listado de documentos.
+- **RF-20** (Estado): Mientras la pestaña activa muestre NotebookLM, YouTube o el visor de contenidos de UNIR, el sistema debe ocultar el listado de documentos.
 - **RF-21** (Estado): Mientras el usuario no haya dado permiso a la extensión para acceder a las webs, el sistema debe ofrecer en el panel la acción "Permitir buscar documentos" en lugar del listado.
 - **RF-22** (Evento): Cuando el usuario concede el permiso para acceder a las webs, el sistema debe buscar los documentos de la página.
 
@@ -104,7 +105,7 @@ Textos aprobados por el usuario. Lo que va entre llaves se sustituye por el dato
 
 ## 8. Fuera de Alcance
 
-- Añadir documentos que solo son accesibles con una sesión iniciada en la web que los publica, como intranets o campus virtuales. Está previsto para una iteración posterior; en esta, se aplica CB-03.
+- Añadir documentos que solo son accesibles con una sesión iniciada en la web que los publica, como intranets o campus virtuales; en esta iteración se aplica CB-03. Los temas del visor de contenidos de UNIR se añaden según REQ-003.
 - Otros formatos: Excel, texto, imágenes.
 - Documentos que la web carga después de terminar la búsqueda, por ejemplo al desplazarse por la página.
 - Buscar documentos en varias pestañas a la vez.
@@ -215,7 +216,7 @@ Textos aprobados por el usuario. Lo que va entre llaves se sustituye por el dato
   - **Entonces** "Física" aparece preseleccionado como cuaderno destino
 - **CA-26** → RN-13
   - **Dado** cada situación de la tabla 6.1
-  - **Cuando** se produce durante las pruebas de CA-01 a CA-25 y CA-27 a CA-31
+  - **Cuando** se produce durante las pruebas de CA-01 a CA-25 y CA-27 a CA-32
   - **Entonces** el texto mostrado coincide con el de la tabla
 - **CA-27** → RN-14
   - **Dado** una web que muestra incrustados un PDF y un PowerPoint, sin enlaces a ellos
@@ -237,6 +238,10 @@ Textos aprobados por el usuario. Lo que va entre llaves se sustituye por el dato
   - **Dado** una web que enlaza `informe.docx`, `informe.doc`, `clase.pptx` y `clase.ppt`
   - **Cuando** el usuario abre el panel
   - **Entonces** el listado muestra solo `informe.docx` y `clase.pptx`
+- **CA-32** → RF-20
+  - **Dado** la página de un tema del visor de contenidos de UNIR que contiene enlaces a otras webs
+  - **Cuando** el usuario abre el panel
+  - **Entonces** no aparece el listado de documentos de la página, sino el listado de temas de REQ-003
 
 ## 10. Supuestos y Preguntas Abiertas
 
@@ -274,3 +279,4 @@ Textos aprobados por el usuario. Lo que va entre llaves se sustituye por el dato
 | 1.0 | 2026-10-21 | Versión inicial. |
 | 1.1 | 2026-10-21 | Se resuelven PA-01 a PA-04. Se añaden RF-21, RF-22 (permiso para acceder a las webs), RN-14 a RN-16, CB-09 y CA-27 a CA-30. CA-26 amplía su alcance a los CA nuevos. |
 | 1.2 | 2026-10-21 | Verificado contra Gemini Notebook: solo admite los formatos actuales de Word y PowerPoint. RN-01 se concreta, SUP-01 queda confirmado en parte y se añade CA-31. |
+| 1.3 | 2026-10-22 | Relación con REQ-003: RF-20 también oculta el listado en el visor de contenidos de UNIR, la exclusión de campus virtuales remite a REQ-003 y se añade CA-32. CA-26 amplía su alcance a CA-32. |
