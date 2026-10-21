@@ -1,3 +1,4 @@
+import { documentKind } from './documents';
 import { NOTEBOOKLM_HOSTS, YOUTUBE_HOSTS } from './domains';
 
 /** Qué acciones ofrece el panel según la página de la pestaña activa. */
@@ -5,11 +6,15 @@ export type PageKind =
   | { kind: 'video'; videoId: string }
   | { kind: 'playlist'; listId: string }
   | { kind: 'notebook' }
+  /** Cualquier otra web: se buscan sus documentos (REQ-002, RF-01). */
+  | { kind: 'web' }
+  /** Un PDF abierto directamente en la pestaña (REQ-002, RF-04). */
+  | { kind: 'document'; url: string }
   | { kind: 'none' };
 
 /**
- * Clasifica la URL de la pestaña activa. `url` llega `undefined` en las webs sin
- * host permission, que no tienen acciones.
+ * Clasifica la URL de la pestaña activa. Con el permiso `activeTab`, `url` llega al abrir el
+ * panel en cualquier web; llega `undefined` en las páginas internas del navegador.
  */
 export function classifyTab(url: string | undefined): PageKind {
   if (!url) return { kind: 'none' };
@@ -30,9 +35,12 @@ export function classifyTab(url: string | undefined): PageKind {
     if (videoId) return { kind: 'video', videoId };
     const listId = parsed.searchParams.get('list');
     if (parsed.pathname === '/playlist' && listId) return { kind: 'playlist', listId };
+    // En YouTube no se buscan documentos (REQ-002, RF-20).
+    return { kind: 'none' };
   }
 
-  return { kind: 'none' };
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return { kind: 'none' };
+  return documentKind(url) === 'pdf' ? { kind: 'document', url } : { kind: 'web' };
 }
 
 function shortsId(pathname: string): string | null {

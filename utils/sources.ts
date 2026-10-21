@@ -1,4 +1,6 @@
-/** Tipos y mensajes compartidos entre el popup y el background para añadir fuentes (REQ-001). */
+/** Tipos y mensajes compartidos entre el popup y el background para añadir fuentes (REQ-001 y REQ-002). */
+
+import type { DocumentStatus, DocumentToAdd } from './add-documents';
 
 export interface Notebook {
   id: string;
@@ -30,3 +32,19 @@ export interface AddToNotebookResponse {
 
 /** Clave en storage.local con el id del último cuaderno al que se añadió una fuente (RN-10). */
 export const LAST_NOTEBOOK_KEY = 'last-notebook';
+
+/**
+ * Nombre del puerto por el que el popup pide añadir documentos (REQ-002). Es un puerto y no un
+ * mensaje para ir recibiendo el estado de cada documento; si el popup se cierra, el background
+ * termina igualmente (RN-16).
+ */
+export const ADD_DOCUMENTS_PORT = 'add-documents';
+
+export interface AddDocumentsRequest {
+  notebook: Notebook;
+  documents: DocumentToAdd[];
+}
+
+export type AddDocumentsEvent =
+  | { type: 'status'; url: string; status: DocumentStatus }
+  | { type: 'done'; response: AddToNotebookResponse };

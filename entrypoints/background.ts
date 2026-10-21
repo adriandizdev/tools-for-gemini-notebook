@@ -1,11 +1,17 @@
+import { addDocuments } from '@/utils/add-documents';
 import { addToNotebook } from '@/utils/add-sources';
+import { createDocumentBackend } from '@/utils/document-backend';
 import { NO_NOTEBOOKS, NOT_LOGGED_IN } from '@/utils/messages';
 import { NotLoggedInError, createNotebookLmClient } from '@/utils/notebooklm-api';
 import { createSourceBackend } from '@/utils/source-backend';
 import {
+  ADD_DOCUMENTS_PORT,
   ADD_TO_NOTEBOOK,
+  type AddDocumentsEvent,
+  type AddDocumentsRequest,
   type AddToNotebookRequest,
   type AddToNotebookResponse,
+  LAST_NOTEBOOK_KEY,
   LIST_NOTEBOOKS,
   type ListNotebooksResponse,
 } from '@/utils/sources';
@@ -25,7 +31,39 @@ export default defineBackground(() => {
       return true;
     }
   });
+
+  browser.runtime.onConnect.addListener((port) => {
+    if (port.name !== ADD_DOCUMENTS_PORT) return;
+    let connected = true;
+    port.onDisconnect.addListener(() => {
+      connected = false;
+    });
+    // Si el popup se cierra, se dejan de enviar estados pero se termina de añadir (RN-16).
+    const post = (event: AddDocumentsEvent) => {
+      if (connected) port.postMessage(event);
+    };
+    port.onMessage.addListener((request: AddDocumentsRequest) => {
+      void addDocumentsFromPopup(request, post);
+    });
+  });
 });
+
+/** No rechaza nunca: cualquier error acaba en el evento `done`. */
+async function addDocumentsFromPopup(
+  { notebook, documents }: AddDocumentsRequest,
+  post: (event: AddDocumentsEvent) => void,
+) {
+  let response: AddToNotebookResponse;
+  try {
+    const backend = createDocumentBackend(createNotebookLmClient());
+    response = await addDocuments(backend, notebook, documents, (url, status) => post({ type: 'status', url, status }));
+  } catch (error) {
+    response = { ok: false, addedAny: false, message: errorMessage(error) };
+  }
+  // Se recuerda aquí y no en el popup, que puede haberse cerrado (RN-10, RN-16).
+  if (response.addedAny) await browser.storage.local.set({ [LAST_NOTEBOOK_KEY]: notebook.id }).catch(() => {});
+  post({ type: 'done', response });
+}
 
 async function listNotebooks(): Promise<ListNotebooksResponse> {
   try {

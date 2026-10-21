@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { type NotebookInfo, type NotebookLmClient, RpcError, type Source } from './notebooklm-api';
 import { REJECTED_REASON, createSourceBackend } from './source-backend';
 
-const ready = (id: string, youtubeId: string): Source => ({ id, youtubeId, ready: true });
+const ready = (id: string, youtubeId: string): Source => ({ id, title: youtubeId, youtubeId, ready: true });
+const failed = (id: string): Source => ({ id, title: id, youtubeId: null, ready: false });
+const notUsed = () => Promise.reject(new Error('no se usa en estos tests'));
 
 /** Doble de NotebookLM que, como el real, deja los vídeos rechazados como fuentes con error. */
 function fakeClient(
@@ -21,7 +23,7 @@ function fakeClient(
       for (const url of urls) {
         const videoId = new URL(url).searchParams.get('v')!;
         const ok = valid.includes(videoId);
-        const source = { id: `s${next++}`, youtubeId: ok ? videoId : null, ready: ok };
+        const source = { id: `s${next++}`, title: url, youtubeId: ok ? videoId : null, ready: ok };
         sources.push(source);
         if (ok) accepted.push(source);
       }
@@ -32,6 +34,9 @@ function fakeClient(
       deleted.push(...ids);
       sources = sources.filter((s) => !ids.includes(s.id));
     },
+    registerFile: notUsed,
+    uploadFile: notUsed,
+    renameSource: notUsed,
   };
   return { client, deleted, sources: () => sources };
 }
@@ -40,7 +45,7 @@ const noPlaylist = async () => [];
 
 describe('createSourceBackend', () => {
   it('calcula los vídeos presentes y el cupo restante', async () => {
-    const { client } = fakeClient([ready('a', 'v1'), { id: 'b', youtubeId: null, ready: false }], {
+    const { client } = fakeClient([ready('a', 'v1'), failed('b')], {
       maxSources: 50,
     });
     const state = await createSourceBackend(client, noPlaylist).getNotebookState('nb');
@@ -59,7 +64,7 @@ describe('createSourceBackend', () => {
   });
 
   it('borra las fuentes con error que deja un alta mixta y no toca las anteriores', async () => {
-    const previous = { id: 'old', youtubeId: null, ready: false };
+    const previous = failed('old');
     const { client, deleted, sources } = fakeClient([previous], { valid: ['ok1', 'ok2'] });
     const results = await createSourceBackend(client, noPlaylist).addYoutubeVideos('nb', ['ok1', 'bad', 'ok2']);
     expect(results).toEqual([

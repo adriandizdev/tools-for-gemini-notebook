@@ -14,6 +14,12 @@ describe('classifyTab', () => {
     ['https://www.youtube.com/playlist?list=PL123', { kind: 'playlist', listId: 'PL123' }],
     ['https://notebook.google.com/notebook/abc-123', { kind: 'notebook' }],
     ['https://notebooklm.google.com/notebook/abc-123', { kind: 'notebook' }],
+    // REQ-002: cualquier otra web busca documentos, y un PDF abierto directamente es un documento.
+    ['https://example.com/watch?v=dQw4w9WgXcQ', { kind: 'web' }],
+    ['http://campus.example.es/asignatura/', { kind: 'web' }],
+    ['https://example.com/docs/guia.pdf', { kind: 'document', url: 'https://example.com/docs/guia.pdf' }],
+    // Un Word abierto en la pestaña no es un PDF abierto en el navegador: se busca como web.
+    ['https://example.com/docs/guia.docx', { kind: 'web' }],
   ])('%s', (url, expected) => {
     expect(classifyTab(url)).toEqual(expected);
   });
@@ -26,7 +32,8 @@ describe('classifyTab', () => {
     'https://www.youtube.com/results?search_query=fisica',
     'https://www.youtube.com/playlist',
     'https://notebook.google.com/',
-    'https://example.com/watch?v=dQw4w9WgXcQ',
+    'https://www.youtube.com/channel/UCYO_jab_esuFRV4b17AJtAw',
+    'file:///C:/docs/guia.pdf',
   ])('no ofrece acciones en %s', (url) => {
     expect(classifyTab(url)).toEqual({ kind: 'none' });
   });

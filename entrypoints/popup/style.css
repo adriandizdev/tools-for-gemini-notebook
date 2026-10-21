@@ -54,3 +54,58 @@ select {
 #status.info {
   color: inherit;
 }
+
+/* REQ-002: el listado de documentos necesita más ancho que las otras acciones (SUP-05). */
+body.documents {
+  width: 480px;
+}
+
+#scan-status {
+  margin: 8px 0 0;
+  color: #555;
+}
+
+#document-list {
+  max-height: 360px;
+  margin: 8px 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.document {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 2px 8px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.document input[type='text'] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  font: inherit;
+}
+
+.document button {
+  width: auto;
+  padding: 4px 10px;
+}
+
+.document-state {
+  grid-column: 2 / 4;
+  margin: 0;
+  font-size: 12px;
+  color: #555;
+  overflow-wrap: anywhere;
+}
+
+.document-state.added {
+  color: #146c2e;
+}
+
+.document-state.failed {
+  color: #b3261e;
+}

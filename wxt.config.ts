@@ -1,14 +1,18 @@
 import { defineConfig } from 'wxt';
-import { NOTEBOOKLM_MATCHES, YOUTUBE_MATCHES } from './utils/domains';
+import { ALL_WEBS, NOTEBOOKLM_MATCHES, YOUTUBE_MATCHES } from './utils/domains';
 
 export default defineConfig({
   manifest: {
     name: 'NotebookLM Tools',
     description:
-      'Amplía Gemini Notebook (NotebookLM): exporta conversaciones a PDF conservando las fórmulas y añade vídeos de YouTube como fuentes.',
-    permissions: ['storage'],
+      'Amplía Gemini Notebook (NotebookLM): exporta conversaciones a PDF conservando las fórmulas y añade como fuentes vídeos de YouTube y documentos de cualquier web.',
+    // `activeTab` da la URL de la pestaña al abrir el panel y deja buscar en ella con `scripting`.
+    permissions: ['storage', 'activeTab', 'scripting'],
     // Permiten leer la URL de la pestaña activa en estas páginas (el popup elige así sus acciones)
     // y que el background llame a NotebookLM y YouTube con las cookies del usuario.
     host_permissions: [...NOTEBOOKLM_MATCHES, ...YOUTUBE_MATCHES],
+    // Para ver el tamaño de los documentos y descargarlos de cualquier web (REQ-002). Se pide
+    // desde el panel la primera vez, no al instalar (RF-21).
+    optional_host_permissions: ALL_WEBS,
   },
 });

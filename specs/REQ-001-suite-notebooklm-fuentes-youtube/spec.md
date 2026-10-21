@@ -4,8 +4,8 @@
 |---|---|
 | **ID** | REQ-001 |
 | **Estado** | Cerrado |
-| **Versión** | 1.4 |
-| **Fecha** | 2026-10-12 |
+| **Versión** | 1.5 |
+| **Fecha** | 2026-10-21 |
 | **Depende de** | Ninguno |
 
 ## 1. Contexto
@@ -29,9 +29,10 @@ El producto deja de ser solo un exportador de conversaciones de NotebookLM y pas
 - **RF-10** (Complejo): Mientras la pestaña activa muestre un vídeo que se reproduce dentro de una lista de reproducción, cuando el usuario confirme el cuaderno destino, el sistema debe añadir únicamente ese vídeo.
 - **RF-11** (Estado): Mientras la pestaña activa muestre YouTube, el sistema debe ocultar en el panel la acción de exportar a PDF.
 - **RF-12** (Estado): Mientras la pestaña activa muestre NotebookLM, el sistema debe ocultar en el panel la acción "Añadir a cuaderno".
-- **RF-13** (Estado): Mientras la pestaña activa no muestre un vídeo de YouTube, una lista de reproducción de YouTube ni una conversación de NotebookLM, el sistema debe mostrar en el panel un mensaje de que no hay acciones disponibles en esa página.
+- ~~**RF-13** (Estado): Mientras la pestaña activa no muestre un vídeo de YouTube, una lista de reproducción de YouTube ni una conversación de NotebookLM, el sistema debe mostrar en el panel un mensaje de que no hay acciones disponibles en esa página.~~ *(Retirado en v1.5 → RF-16; las demás webs pasan a REQ-002)*
 - **RF-14** (Evento): Cuando la adición de una lista de reproducción termina con algún vídeo omitido o rechazado, el sistema debe mostrar un resumen con el número de vídeos añadidos, ya presentes y no admitidos.
 - **RF-15** (Evento): Cuando el sistema omite un vídeo porque ya es fuente del cuaderno destino, el sistema debe informar al usuario de que el vídeo ya estaba en el cuaderno.
+- **RF-16** (Estado): Mientras la pestaña activa muestre una página de YouTube o de NotebookLM que no sea un vídeo, una lista de reproducción ni una conversación, el sistema debe mostrar en el panel un mensaje de que no hay acciones disponibles en esa página.
 
 ## 4. Reglas de Negocio
 
@@ -75,14 +76,14 @@ Textos revisados y aprobados por el usuario. Lo que va entre llaves se sustituye
 | M-07 | Ningún vídeo de la lista añadido (CB-08) | No se ha añadido ningún vídeo de la lista: {motivo}. |
 | M-08 | Sin sesión (CB-04) | Para añadir fuentes debe iniciar sesión. |
 | M-09 | Sin cuadernos (CB-07) | No tiene ningún cuaderno. Cree uno en Gemini Notebook antes de añadir fuentes. |
-| M-10 | Página sin acciones (RF-13) | No hay acciones disponibles en esta página. |
+| M-10 | Página sin acciones (RF-16) | No hay acciones disponibles en esta página. |
 
 ## 8. Fuera de Alcance
 
 - Botón para añadir el vídeo junto al reproductor, dentro de la propia página de YouTube. Está previsto para una iteración posterior.
 - Crear un cuaderno nuevo desde la extensión.
 - Enlace para abrir el cuaderno después de añadir la fuente.
-- Importar como fuente contenido de webs distintas de YouTube.
+- ~~Importar como fuente contenido de webs distintas de YouTube.~~ *(Retirado en v1.5: los documentos de cualquier web los cubre REQ-002)*
 
 ## 9. Criterios de Aceptación
 
@@ -126,10 +127,10 @@ Textos revisados y aprobados por el usuario. Lo que va entre llaves se sustituye
   - **Dado** que el usuario no ha iniciado sesión en NotebookLM y la pestaña activa muestra un vídeo de YouTube
   - **Cuando** elige "Añadir a cuaderno"
   - **Entonces** aparece el mensaje M-08
-- **CA-11** → RF-11, RF-12, RF-13
-  - **Dado** tres pestañas: un vídeo de YouTube, una conversación de NotebookLM y una web cualquiera
+- **CA-11** → RF-11, RF-12, RF-16
+  - **Dado** tres pestañas: un vídeo de YouTube, una conversación de NotebookLM y la página de inicio de YouTube
   - **Cuando** el usuario abre el panel de la extensión en cada una
-  - **Entonces** en YouTube solo aparece "Añadir a cuaderno", en NotebookLM solo aparece la exportación a PDF, y en la web cualquiera aparece el mensaje M-10
+  - **Entonces** en el vídeo solo aparece "Añadir a cuaderno", en NotebookLM solo aparece la exportación a PDF, y en la página de inicio de YouTube aparece el mensaje M-10
 - **CA-12** → RN-04, RN-07, RF-14
   - **Dado** que Gemini Notebook permite saber qué vídeos ya son fuente de un cuaderno, y una lista de 5 vídeos de la que 3 ya son fuente del cuaderno destino
   - **Cuando** el usuario añade la lista a ese cuaderno
@@ -210,3 +211,4 @@ Textos revisados y aprobados por el usuario. Lo que va entre llaves se sustituye
 | 1.2 | 2026-10-12 | Se resuelven PA-09 a PA-13. Se añaden RF-14, RF-15, RN-05, RN-06, CB-06 a CB-08, la tabla de mensajes 6.1, CA-12 a CA-16, SUP-05, SUP-06, PA-14, PA-15 y la equivalencia NotebookLM / Gemini Notebook en el glosario. RN-04 amplía su texto a las listas. CA-01, CA-02, CA-07 a CA-11 ahora citan los mensajes de la tabla. |
 | 1.3 | 2026-10-12 | Se resuelven PA-14 y PA-15. Se añade RN-07 y SUP-07, y se retira SUP-06. CA-08 y CA-12 quedan condicionados a RN-07. Los textos de la tabla 6.1 quedan aprobados. Estado: Cerrado. |
 | 1.4 | 2026-10-12 | El usuario confirma los supuestos: SUP-01 a SUP-05 y SUP-07 pasan a RN-08 a RN-13. Se añaden CA-17 a CA-19, y CA-02, CA-03 y CA-04 se amplían para cubrir RN-08 a RN-10. |
+| 1.5 | 2026-10-21 | Por REQ-002: se retira RF-13, sustituido por RF-16 (M-10 solo en páginas de YouTube y NotebookLM sin acción), y se retira de *Fuera de Alcance* la exclusión de las webs distintas de YouTube. CA-11 y la tabla 6.1 pasan a citar RF-16. |

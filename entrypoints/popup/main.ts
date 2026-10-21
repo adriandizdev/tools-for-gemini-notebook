@@ -1,6 +1,7 @@
 import { NO_ACTIONS } from '@/utils/messages';
 import { classifyTab } from '@/utils/page';
 import { setupAdd } from './add';
+import { setupDocuments } from './documents';
 import { setupExport } from './export';
 
 export type StatusKind = 'error' | 'success' | 'info';
@@ -12,8 +13,8 @@ function showStatus(message: string, kind: StatusKind = 'error') {
   status.className = kind;
 }
 
-// El panel solo ofrece las acciones de la página activa (RF-11, RF-12, RF-13).
-// `tab.url` solo llega en los dominios con host permission (utils/domains.ts).
+// El panel solo ofrece las acciones de la página activa (REQ-001 RF-11, RF-12, RF-16; REQ-002 RF-01, RF-20).
+// Con `activeTab`, `tab.url` llega al abrir el panel en cualquier web.
 browser.tabs
   .query({ active: true, currentWindow: true })
   .then(([tab]) => {
@@ -24,6 +25,10 @@ browser.tabs
     } else if (page.kind === 'video' || page.kind === 'playlist') {
       document.querySelector<HTMLElement>('#add-section')!.hidden = false;
       setupAdd(page, showStatus);
+    } else if ((page.kind === 'web' || page.kind === 'document') && tab?.id !== undefined) {
+      document.body.classList.add('documents');
+      document.querySelector<HTMLElement>('#documents-section')!.hidden = false;
+      setupDocuments(tab.id, page, showStatus);
     } else {
       showStatus(NO_ACTIONS, 'info');
     }

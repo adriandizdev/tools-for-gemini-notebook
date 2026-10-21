@@ -15,7 +15,14 @@ const RPC = {
   listNotebooks: 'wXbhsf',
   addSources: 'izAoDd',
   deleteSources: 'tGMBJ',
+  /** Registra una fuente de tipo fichero; el contenido se sube después a `UPLOAD_PATH`. Verificado el 2026-10-21. */
+  registerFile: 'o4cbdc',
+  renameSource: 'b7Wfje',
 } as const;
+
+const UPLOAD_PATH = '/upload/_/?authuser=0';
+/** Tipo que la web envía al registrar cualquier fichero local (PDF, Word o PowerPoint). */
+const LOCAL_FILE = 3;
 
 /** Contexto que la web envía junto a las altas y bajas de fuentes. */
 const CLIENT_CONTEXT = [2, null, [1], [1, null, null, null, null, null, null, null, null, null, [1, 3]]];
@@ -34,6 +41,7 @@ export interface Session {
 
 export interface Source {
   id: string;
+  title: string;
   /** Id del vídeo si la fuente es de YouTube; `null` si no lo es o NotebookLM aún no lo sabe. */
   youtubeId: string | null;
   ready: boolean;
@@ -121,10 +129,12 @@ export function parseSources(list: unknown): Source[] {
   return (list as unknown[]).flatMap((s) => {
     const id = dig(s, 0, 0);
     if (typeof id !== 'string') return [];
+    const title = dig(s, 1);
     const youtubeId = dig(s, 2, 5, 1);
     return [
       {
         id,
+        title: typeof title === 'string' ? title : '',
         youtubeId: typeof youtubeId === 'string' ? youtubeId : null,
         ready: dig(s, 3, 1) === SOURCE_READY,
       },
@@ -194,6 +204,60 @@ export function createNotebookLmClient(fetchFn: typeof fetch = fetch) {
     async deleteSources(notebookId: string, sourceIds: string[]): Promise<void> {
       if (!sourceIds.length) return;
       await call(RPC.deleteSources, [sourceIds.map((id) => [id]), CLIENT_CONTEXT], notebookPath(notebookId));
+    },
+
+    /**
+     * Primer paso de la subida: crea la fuente vacía y devuelve su id. `fileName` debe acabar en
+     * una extensión que Gemini Notebook admita; si no, la subida responde "Unsupported file extension".
+     */
+    async registerFile(notebookId: string, fileName: string): Promise<string> {
+      const data = await call(
+        RPC.registerFile,
+        [[[fileName, LOCAL_FILE]], notebookId, CLIENT_CONTEXT],
+        notebookPath(notebookId),
+      );
+      const id = dig(data, 0, 0, 0, 0);
+      if (typeof id !== 'string') throw new Error('Gemini Notebook no ha creado la fuente');
+      return id;
+    },
+
+    /**
+     * Segundo paso: sube el contenido con el protocolo reanudable de Google en dos peticiones
+     * (`start` y `upload, finalize`). Si falla, la fuente queda registrada sin contenido.
+     */
+    async uploadFile(notebookId: string, sourceId: string, fileName: string, content: Blob): Promise<void> {
+      const headers = {
+        'x-goog-authuser': '0',
+        'content-type': 'application/x-www-form-urlencoded;charset=utf-8',
+      };
+      const start = await fetchFn(`${NOTEBOOKLM_ORIGIN}${UPLOAD_PATH}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          ...headers,
+          'x-goog-upload-command': 'start',
+          'x-goog-upload-header-content-length': String(content.size),
+          'x-goog-upload-protocol': 'resumable',
+        },
+        body: JSON.stringify({ PROJECT_ID: notebookId, SOURCE_NAME: fileName, SOURCE_ID: sourceId }),
+      });
+      const uploadUrl = start.headers.get('x-goog-upload-url');
+      if (start.status === 401) throw new NotLoggedInError();
+      if (!start.ok || !uploadUrl) throw new Error(`Gemini Notebook no admite la subida: ${(await start.text()).trim()}`);
+
+      const upload = await fetchFn(uploadUrl, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { ...headers, 'x-goog-upload-command': 'upload, finalize', 'x-goog-upload-offset': '0' },
+        body: content,
+      });
+      if (!upload.ok || upload.headers.get('x-goog-upload-status') !== 'final') {
+        throw new Error(`Gemini Notebook no ha recibido el documento (HTTP ${upload.status})`);
+      }
+    },
+
+    async renameSource(notebookId: string, sourceId: string, title: string): Promise<void> {
+      await call(RPC.renameSource, [null, [sourceId], [[[title]]], CLIENT_CONTEXT], notebookPath(notebookId));
     },
   };
 }

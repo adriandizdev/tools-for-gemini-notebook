@@ -10,6 +10,7 @@ import {
 } from '@/utils/sources';
 import { NO_NOTEBOOKS } from '@/utils/messages';
 import type { StatusKind } from './main';
+import { fillSelect } from './notebooks';
 
 /** Acción "Añadir a cuaderno" en un vídeo o una lista de YouTube. */
 export function setupAdd(target: SourceTarget, showStatus: (message: string, kind?: StatusKind) => void) {
@@ -67,13 +68,4 @@ export function setupAdd(target: SourceTarget, showStatus: (message: string, kin
     event.preventDefault();
     void addToSelected();
   });
-}
-
-/** Rellena el desplegable y preselecciona el último cuaderno usado si sigue existiendo (RF-04, CB-05). */
-async function fillSelect(select: HTMLSelectElement, notebooks: Notebook[]) {
-  const last = (await browser.storage.local.get(LAST_NOTEBOOK_KEY))[LAST_NOTEBOOK_KEY];
-  const placeholder = new Option('Elige un cuaderno…', '');
-  placeholder.disabled = true;
-  select.replaceChildren(placeholder, ...notebooks.map((n) => new Option(n.title, n.id)));
-  select.value = notebooks.some((n) => n.id === last) ? (last as string) : '';
 }

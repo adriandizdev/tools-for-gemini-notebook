@@ -4,7 +4,7 @@
 |---|---|
 | **ID** | REQ-002 |
 | **Estado** | Borrador |
-| **Versión** | 1.0 |
+| **Versión** | 1.2 |
 | **Fecha** | 2026-10-21 |
 | **Depende de** | REQ-001 |
 
@@ -38,10 +38,12 @@ Mientras navega por cualquier web, el usuario de la extensión puede ver los doc
 - **RF-18** (Evento): Cuando "Añadir seleccionados" termina con todos los documentos añadidos, el sistema debe mostrar el mensaje M-13.
 - **RF-19** (Evento): Cuando "Añadir seleccionados" termina con algún documento ya presente o no añadido, el sistema debe mostrar el mensaje M-14.
 - **RF-20** (Estado): Mientras la pestaña activa muestre NotebookLM o YouTube, el sistema debe ocultar el listado de documentos.
+- **RF-21** (Estado): Mientras el usuario no haya dado permiso a la extensión para acceder a las webs, el sistema debe ofrecer en el panel la acción "Permitir buscar documentos" en lugar del listado.
+- **RF-22** (Evento): Cuando el usuario concede el permiso para acceder a las webs, el sistema debe buscar los documentos de la página.
 
 ## 4. Reglas de Negocio
 
-- **RN-01**: Se consideran documentos los ficheros PDF, Word y PowerPoint.
+- **RN-01**: Se consideran documentos los ficheros PDF, Word (formato actual, `.docx`) y PowerPoint (formato actual, `.pptx`). Los formatos antiguos de Word (`.doc`) y PowerPoint (`.ppt`) no se buscan, porque Gemini Notebook no los admite.
 - **RN-02**: Dos documentos con la misma dirección son el mismo documento.
 - **RN-03**: Dos documentos con dirección distinta son el mismo documento si tienen el mismo nombre de fichero y el mismo tamaño.
 - **RN-04**: Si no se conoce el tamaño de un documento, se considera distinto de cualquier otro con dirección distinta.
@@ -61,6 +63,9 @@ Mientras navega por cualquier web, el usuario de la extensión puede ver los doc
 - **RN-11**: Cada documento se añade como una fuente independiente.
 - **RN-12**: No hay un número máximo de documentos por página.
 - **RN-13**: Los mensajes al usuario son los de la tabla de la sección 6.1.
+- **RN-14**: De los documentos incrustados en la página solo se buscan los PDF. Los Word y PowerPoint se buscan solo como enlaces.
+- **RN-15**: Un documento ya es fuente del cuaderno destino si el cuaderno tiene una fuente con el mismo nombre que figura en el listado.
+- **RN-16**: Si el usuario cierra el panel, la búsqueda se descarta y los documentos que ya se estaban añadiendo se terminan de añadir.
 
 ## 6. Casos Borde y Comportamientos de Error
 
@@ -72,6 +77,7 @@ Mientras navega por cualquier web, el usuario de la extensión puede ver los doc
 - **CB-06** (No deseado): Si el usuario no ha iniciado sesión en NotebookLM, entonces el sistema debe mostrar el mensaje M-08.
 - **CB-07** (No deseado): Si el usuario no tiene ningún cuaderno, entonces el sistema debe mostrar el mensaje M-09.
 - **CB-08** (No deseado): Si la búsqueda termina sin encontrar ningún documento, entonces el sistema debe mostrar el mensaje M-10.
+- **CB-09** (No deseado): Si el usuario deniega el permiso para acceder a las webs, entonces el sistema debe seguir ofreciendo la acción "Permitir buscar documentos".
 
 ### 6.1 Mensajes al usuario
 
@@ -209,13 +215,33 @@ Textos aprobados por el usuario. Lo que va entre llaves se sustituye por el dato
   - **Entonces** "Física" aparece preseleccionado como cuaderno destino
 - **CA-26** → RN-13
   - **Dado** cada situación de la tabla 6.1
-  - **Cuando** se produce durante las pruebas de CA-01 a CA-25
+  - **Cuando** se produce durante las pruebas de CA-01 a CA-25 y CA-27 a CA-31
   - **Entonces** el texto mostrado coincide con el de la tabla
+- **CA-27** → RN-14
+  - **Dado** una web que muestra incrustados un PDF y un PowerPoint, sin enlaces a ellos
+  - **Cuando** el usuario abre el panel
+  - **Entonces** el listado muestra solo el PDF
+- **CA-28** → RN-15
+  - **Dado** un cuaderno con una fuente llamada "Memoria 2025"
+  - **Cuando** el usuario añade a ese cuaderno un documento cuyo nombre en el listado es "Memoria 2025"
+  - **Entonces** el documento muestra el mensaje M-15 en su estado y el cuaderno conserva una única fuente con ese nombre
+- **CA-29** → RN-16
+  - **Dado** que el usuario ha pulsado "Añadir seleccionados" con 3 documentos
+  - **Cuando** cierra el panel antes de que termine
+  - **Entonces** los 3 documentos acaban como fuentes del cuaderno
+- **CA-30** → RF-21, RF-22, CB-09
+  - **Dado** que el usuario no ha dado permiso a la extensión para acceder a las webs
+  - **Cuando** abre el panel en una web con documentos, pulsa "Permitir buscar documentos" y primero deniega el permiso y después lo concede
+  - **Entonces** tras denegarlo sigue viendo "Permitir buscar documentos", y tras concederlo aparece el listado de documentos
+- **CA-31** → RN-01
+  - **Dado** una web que enlaza `informe.docx`, `informe.doc`, `clase.pptx` y `clase.ppt`
+  - **Cuando** el usuario abre el panel
+  - **Entonces** el listado muestra solo `informe.docx` y `clase.pptx`
 
 ## 10. Supuestos y Preguntas Abiertas
 
 **Supuestos**
-- **SUP-01**: Gemini Notebook admite PDF, Word y PowerPoint como fuente. Si rechaza alguno de estos formatos, se aplica CB-04.
+- ~~**SUP-01**: Gemini Notebook admite PDF, Word y PowerPoint como fuente. Si rechaza alguno de estos formatos, se aplica CB-04.~~ *(Confirmado en v1.2 solo para los formatos actuales → RN-01)*
 - **SUP-02**: El cuaderno destino se elige una sola vez en el panel y se aplica tanto a "Añadir" como a "Añadir seleccionados".
 - **SUP-03**: Para el límite de CB-01 solo cuentan los documentos seleccionados que todavía no están en el cuaderno, como en REQ-001 (RN-12).
 - **SUP-04**: Saber si un documento ya es fuente del cuaderno depende de lo que permita Gemini Notebook, como en REQ-001 (RN-07). Si no lo permite, los documentos se añaden sin esa comprobación y RN-10, CB-02 y el recuento de "ya estaban" de M-14 no se aplican.
@@ -224,10 +250,10 @@ Textos aprobados por el usuario. Lo que va entre llaves se sustituye por el dato
 - **SUP-07**: La búsqueda se hace sobre la página tal como está al abrir el panel.
 
 **Preguntas abiertas**
-- **PA-01**: ¿Se buscan también los Word y PowerPoint incrustados en la página (visores dentro de la web), o solo los PDF incrustados?
-- **PA-02**: ¿Cuándo se considera que un documento "ya es fuente" del cuaderno: por la misma dirección, por el mismo nombre de fuente o por otro criterio?
-- **PA-03**: ¿Qué ocurre si el usuario cierra el panel mientras se buscan o se añaden documentos?
-- **PA-04**: ¿Se actualiza REQ-001 (RF-13 y *Fuera de Alcance*) para reflejar los cambios descritos en *Relación con REQ-001*?
+- ~~**PA-01**: ¿Se buscan también los Word y PowerPoint incrustados en la página, o solo los PDF incrustados?~~ *(Resuelta en v1.1 → RN-14)*
+- ~~**PA-02**: ¿Cuándo se considera que un documento "ya es fuente" del cuaderno?~~ *(Resuelta en v1.1 → RN-15)*
+- ~~**PA-03**: ¿Qué ocurre si el usuario cierra el panel mientras se buscan o se añaden documentos?~~ *(Resuelta en v1.1 → RN-16)*
+- ~~**PA-04**: ¿Se actualiza REQ-001 para reflejar los cambios descritos en *Relación con REQ-001*?~~ *(Resuelta en v1.1: REQ-001 v1.5)*
 
 ## 11. Glosario
 
@@ -246,3 +272,5 @@ Textos aprobados por el usuario. Lo que va entre llaves se sustituye por el dato
 | Versión | Fecha | Cambio |
 |---|---|---|
 | 1.0 | 2026-10-21 | Versión inicial. |
+| 1.1 | 2026-10-21 | Se resuelven PA-01 a PA-04. Se añaden RF-21, RF-22 (permiso para acceder a las webs), RN-14 a RN-16, CB-09 y CA-27 a CA-30. CA-26 amplía su alcance a los CA nuevos. |
+| 1.2 | 2026-10-21 | Verificado contra Gemini Notebook: solo admite los formatos actuales de Word y PowerPoint. RN-01 se concreta, SUP-01 queda confirmado en parte y se añade CA-31. |

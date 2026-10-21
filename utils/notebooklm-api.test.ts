@@ -9,18 +9,22 @@ import {
   parseSession,
   parseSources,
 } from './notebooklm-api';
+import addFile from './__fixtures__/notebooklm-rpc/add-file.txt?raw';
 import addSources from './__fixtures__/notebooklm-rpc/add-sources.txt?raw';
 import addSourcesError from './__fixtures__/notebooklm-rpc/add-sources-error.txt?raw';
 import deleteSources from './__fixtures__/notebooklm-rpc/delete-sources.txt?raw';
 import listNotebooks from './__fixtures__/notebooklm-rpc/list-notebooks.txt?raw';
 import listNotebooksEmpty from './__fixtures__/notebooklm-rpc/list-notebooks-empty.txt?raw';
+import renameSource from './__fixtures__/notebooklm-rpc/rename-source.txt?raw';
 
 const fixtures: Record<string, string> = {
+  'add-file.txt': addFile,
   'add-sources.txt': addSources,
   'add-sources-error.txt': addSourcesError,
   'delete-sources.txt': deleteSources,
   'list-notebooks.txt': listNotebooks,
   'list-notebooks-empty.txt': listNotebooksEmpty,
+  'rename-source.txt': renameSource,
 };
 const fixture = (name: string) => fixtures[name]!;
 
@@ -50,10 +54,30 @@ describe('parseNotebooks', () => {
 
   it('lee las fuentes de YouTube y marca las que tienen error', () => {
     expect(notebooks[0]!.sources).toEqual([
-      { id: '39339623-b06f-466c-bb39-59c093dce583', youtubeId: 'Ilg3gGewQ5U', ready: true },
-      { id: 'c1dc93f0-e751-410e-aca3-a36091e1319d', youtubeId: 'aircAruvnKk', ready: true },
-      { id: 'ad258fe4-0fdc-4e65-8d92-50d878d58b0f', youtubeId: 'IHZwWFHWa-w', ready: true },
-      { id: '2f6554ad-294f-4f75-b591-00abdfacca44', youtubeId: null, ready: false },
+      {
+        id: '39339623-b06f-466c-bb39-59c093dce583',
+        title: 'Backpropagation, intuitively | Deep Learning Chapter 3',
+        youtubeId: 'Ilg3gGewQ5U',
+        ready: true,
+      },
+      {
+        id: 'c1dc93f0-e751-410e-aca3-a36091e1319d',
+        title: 'But what is a neural network? | Deep learning chapter 1',
+        youtubeId: 'aircAruvnKk',
+        ready: true,
+      },
+      {
+        id: 'ad258fe4-0fdc-4e65-8d92-50d878d58b0f',
+        title: 'Gradient descent, how neural networks learn | Deep Learning Chapter 2',
+        youtubeId: 'IHZwWFHWa-w',
+        ready: true,
+      },
+      {
+        id: '2f6554ad-294f-4f75-b591-00abdfacca44',
+        title: 'https://www.youtube.com/watch?v=zzzzzzzzzz1',
+        youtubeId: null,
+        ready: false,
+      },
     ]);
     expect(notebooks[1]!.sources).toEqual([]);
   });
@@ -67,7 +91,12 @@ describe('parseBatchExecute', () => {
   it('devuelve las fuentes aceptadas en un alta', () => {
     const data = parseBatchExecute(fixture('add-sources.txt'), 'izAoDd') as unknown[];
     expect(parseSources(data[0])).toEqual([
-      { id: 'c78c9f58-8c09-4845-aca7-02b71358390d', youtubeId: 'KuXjwB4LzSA', ready: true },
+      {
+        id: 'c78c9f58-8c09-4845-aca7-02b71358390d',
+        title: 'But what is a convolution?',
+        youtubeId: 'KuXjwB4LzSA',
+        ready: true,
+      },
     ]);
   });
 
@@ -111,5 +140,81 @@ describe('createNotebookLmClient', () => {
     expect(await client.listNotebooks()).toHaveLength(2);
     expect(await client.listNotebooks()).toHaveLength(2);
     expect(calls.filter((url) => url === 'https://notebook.google.com/')).toHaveLength(1);
+  });
+});
+
+describe('subida de ficheros (REQ-002)', () => {
+  const SOURCE = 'aea809ec-2a01-47cf-a41d-6cb976dab683';
+  const UPLOAD_URL = 'https://notebook.google.com/upload/_/?authuser=0&upload_id=abc&upload_protocol=resumable';
+
+  interface Call {
+    url: string;
+    headers: Record<string, string>;
+    body: unknown;
+  }
+
+  /** Doble de `fetch` que responde según la URL y guarda cada petición. */
+  function fakeFetch(routes: (url: string) => Response) {
+    const calls: Call[] = [];
+    const fetchFn = ((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = input instanceof Request ? input.url : String(input);
+      calls.push({ url, headers: (init?.headers ?? {}) as Record<string, string>, body: init?.body });
+      return Promise.resolve(url === 'https://notebook.google.com/' ? new Response(homeHtml) : routes(url));
+    }) as typeof fetch;
+    return { client: createNotebookLmClient(fetchFn), calls };
+  }
+
+  it('registra el fichero con o4cbdc y devuelve el id de la fuente', async () => {
+    const { client, calls } = fakeFetch(() => new Response(fixture('add-file.txt')));
+    expect(await client.registerFile(PRUEBA, 'Prueba API REQ-002.docx')).toBe(SOURCE);
+    const freq = new URLSearchParams(calls[1]!.body as string).get('f.req')!;
+    const args = JSON.parse((JSON.parse(freq) as string[][][])[0]![0]![1]!) as unknown[];
+    expect(args.slice(0, 2)).toEqual([[['Prueba API REQ-002.docx', 3]], PRUEBA]);
+  });
+
+  it('sube el contenido en dos pasos: start y upload, finalize', async () => {
+    const { client, calls } = fakeFetch((url) =>
+      url === UPLOAD_URL
+        ? new Response('OK', { headers: { 'x-goog-upload-status': 'final' } })
+        : new Response('', { headers: { 'x-goog-upload-url': UPLOAD_URL, 'x-goog-upload-status': 'active' } }),
+    );
+    const content = new Blob(['%PDF-1.4']);
+    await client.uploadFile(PRUEBA, SOURCE, 'Guía.pdf', content);
+
+    const [start, upload] = calls;
+    expect(start!.url).toBe('https://notebook.google.com/upload/_/?authuser=0');
+    expect(start!.headers).toMatchObject({
+      'x-goog-upload-command': 'start',
+      'x-goog-upload-protocol': 'resumable',
+      'x-goog-upload-header-content-length': String(content.size),
+    });
+    expect(JSON.parse(start!.body as string)).toEqual({ PROJECT_ID: PRUEBA, SOURCE_NAME: 'Guía.pdf', SOURCE_ID: SOURCE });
+    expect(upload!.url).toBe(UPLOAD_URL);
+    expect(upload!.headers).toMatchObject({ 'x-goog-upload-command': 'upload, finalize', 'x-goog-upload-offset': '0' });
+    expect(upload!.body).toBe(content);
+  });
+
+  it('falla con el motivo de Gemini Notebook si rechaza la subida', async () => {
+    const { client } = fakeFetch(() => new Response('Unsupported file extension for file', { status: 400 }));
+    await expect(client.uploadFile(PRUEBA, SOURCE, 'Guía', new Blob(['x']))).rejects.toThrow(
+      'Unsupported file extension for file',
+    );
+  });
+
+  it('falla si la subida no termina en estado final', async () => {
+    const { client } = fakeFetch((url) =>
+      url === UPLOAD_URL
+        ? new Response('', { status: 500 })
+        : new Response('', { headers: { 'x-goog-upload-url': UPLOAD_URL } }),
+    );
+    await expect(client.uploadFile(PRUEBA, SOURCE, 'Guía.pdf', new Blob(['x']))).rejects.toThrow('HTTP 500');
+  });
+
+  it('renombra la fuente con b7Wfje', async () => {
+    const { client, calls } = fakeFetch(() => new Response(fixture('rename-source.txt')));
+    await client.renameSource(PRUEBA, SOURCE, 'Prueba API renombrada');
+    const freq = new URLSearchParams(calls[1]!.body as string).get('f.req')!;
+    const args = JSON.parse((JSON.parse(freq) as string[][][])[0]![0]![1]!) as unknown[];
+    expect(args.slice(0, 3)).toEqual([null, [SOURCE], [[['Prueba API renombrada']]]]);
   });
 });

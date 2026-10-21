@@ -11,3 +11,6 @@ const toMatches = (hosts: string[]) => hosts.map((host) => `https://${host}/*`);
 
 export const NOTEBOOKLM_MATCHES = toMatches(NOTEBOOKLM_HOSTS);
 export const YOUTUBE_MATCHES = toMatches(YOUTUBE_HOSTS);
+
+/** Permiso opcional sobre cualquier web, para los documentos de REQ-002. */
+export const ALL_WEBS = ['http://*/*', 'https://*/*'];

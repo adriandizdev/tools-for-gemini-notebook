@@ -25,6 +25,17 @@
       </form>
     </section>
 
+    <section id="documents-section" hidden>
+      <button id="grant" hidden>Permitir buscar documentos</button>
+      <div id="documents" hidden>
+        <label for="documents-notebook">Cuaderno</label>
+        <select id="documents-notebook"></select>
+        <p id="scan-status" role="status" hidden></p>
+        <ul id="document-list"></ul>
+        <button id="add-selected" disabled>Añadir seleccionados</button>
+      </div>
+    </section>
+
     <p id="status" role="status"></p>
     <script type="module" src="./main.ts"></script>
   </body>
