@@ -15,6 +15,7 @@ npm run build            # build de producción en .output/chrome-mv3/ (cargable
 npm run zip              # empaqueta para la Chrome Web Store
 npm run compile          # comprobación de tipos (tsc --noEmit)
 npm run lint             # oxlint con reglas que usan tipos (.oxlintrc.json)
+npm run format           # Prettier (CI comprueba `npm run format:check`)
 npm test                 # Vitest (entorno jsdom)
 npx vitest run utils/extract.test.ts          # un solo archivo de tests
 npx vitest run -t "conserva el HTML"           # un solo test por nombre
@@ -65,6 +66,7 @@ Reutiliza todo REQ-002 (permiso, panel, puerto, `addDocuments`, mensajes). Cambi
 3. Cada `DocumentToAdd` de un tema lleva `unirTopic: {tabId, topicId}`. Al añadirlo, el background inyecta `callVisorApi` en esa pestaña para obtener `downloadUrl` (`resolveDocumentUrl` → `createDocumentBackend(…, resolveUrl)`), y lo descarga sin credenciales como cualquier documento.
 
 **El token del campus nunca sale de la página** (SUP-07): la API solo se llama desde funciones inyectadas en la pestaña del visor. API verificada contra la página real el 2026-10-22:
+
 - Sin cookies: `Authorization: Bearer` con la clave `access_token` del `sessionStorage` (angular-oauth2-oidc). Sin token, 401.
 - `GET /api/v3/subjects/{id}/user-topics` → `{subjectTitle, topics[{topicId (número), title, groups}]}`, en el orden del visor. `topicId` es el mismo de la URL `/mis-temas/{topicId}`.
 - `POST /api/v1/topics/{topicId}/download` con `{}` → `{filename, downloadUrl, …}`; `downloadUrl` (cms.unir.net) se descarga sin cookies ni token y no trae `content-length`.

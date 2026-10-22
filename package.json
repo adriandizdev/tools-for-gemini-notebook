@@ -1,9 +1,23 @@
 {
-  "name": "notebooklmtopdf",
-  "description": "Extensión de Chrome que exporta conversaciones de NotebookLM a PDF conservando fórmulas y ecuaciones",
+  "name": "notebooklm-tools",
+  "description": "Extensión de Chrome que amplía NotebookLM: exporta conversaciones a PDF conservando las fórmulas y añade como fuentes vídeos de YouTube, documentos de cualquier web y temas del campus de UNIR",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
+  "license": "MIT",
+  "author": "Adrian DG <adriandizdev@gmail.com>",
+  "keywords": [
+    "chrome-extension",
+    "manifest-v3",
+    "notebooklm",
+    "wxt",
+    "typescript",
+    "katex",
+    "pdf"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "wxt",
     "build": "wxt build",
