@@ -67,7 +67,7 @@ NotebookLM no tiene API pública. `utils/notebooklm-api.ts` es el único módulo
 | `o4cbdc` + `/upload/_/` | Registra una fuente de fichero y la sube en dos pasos (reanudable).    |
 | `b7Wfje`                | Renombra una fuente.                                                   |
 
-Las respuestas reales están en `utils/__fixtures__/notebooklm-rpc/`. Si Google cambia el protocolo, se actualizan juntos el módulo y los fixtures. Las notas de verificación (fechas y comportamientos comprobados) están en [`CLAUDE.md`](../CLAUDE.md).
+Las respuestas reales están en `utils/__fixtures__/notebooklm-rpc/`. Si Google cambia el protocolo, se actualizan juntos el módulo y los fixtures. Las notas de verificación (fechas y comportamientos comprobados) están en [`PROTOCOLOS.md`](PROTOCOLOS.md).
 
 ## Tests
 
