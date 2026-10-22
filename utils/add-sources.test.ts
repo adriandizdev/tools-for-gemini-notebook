@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { type AddResult, NOTEBOOK_FULL, type NotebookState, type SourceBackend, addToNotebook } from './add-sources';
+import {
+  type AddResult,
+  NOTEBOOK_FULL,
+  type NotebookState,
+  type SourceBackend,
+  addToNotebook,
+} from './add-sources';
 import * as m from './messages';
 
 const notebook = { id: 'nb1', title: 'Física' };
@@ -62,7 +68,9 @@ describe('añadir un vídeo', () => {
 
   it('CA-19: sin poder consultar las fuentes, añade sin comprobar', async () => {
     const { backend, added } = fakeBackend({ existing: null });
-    expect((await addToNotebook(backend, notebook, video('a'))).message).toBe(m.videoAdded('Física'));
+    expect((await addToNotebook(backend, notebook, video('a'))).message).toBe(
+      m.videoAdded('Física'),
+    );
     expect(added).toEqual(['a']);
   });
 
@@ -77,7 +85,9 @@ describe('añadir un vídeo', () => {
 
   it('CA-17: un cuaderno lleno es un rechazo más (M-06) y no se intenta añadir', async () => {
     const { backend, added } = fakeBackend({ remaining: 0 });
-    expect((await addToNotebook(backend, notebook, video('a'))).message).toBe(m.videoRejected(NOTEBOOK_FULL));
+    expect((await addToNotebook(backend, notebook, video('a'))).message).toBe(
+      m.videoRejected(NOTEBOOK_FULL),
+    );
     expect(added).toEqual([]);
   });
 
@@ -109,14 +119,25 @@ describe('añadir una lista', () => {
   });
 
   it('CA-12: añade solo los que faltan y muestra M-03', async () => {
-    const { backend, added } = fakeBackend({ playlist: ['a', 'b', 'c', 'd', 'e'], existing: ['a', 'c', 'e'] });
-    expect((await addToNotebook(backend, notebook, list)).message).toBe(m.playlistPartial(2, 5, 'Física', 3, 0));
+    const { backend, added } = fakeBackend({
+      playlist: ['a', 'b', 'c', 'd', 'e'],
+      existing: ['a', 'c', 'e'],
+    });
+    expect((await addToNotebook(backend, notebook, list)).message).toBe(
+      m.playlistPartial(2, 5, 'Física', 3, 0),
+    );
     expect(added).toEqual(['b', 'd']);
   });
 
   it('CA-18: para el cupo solo cuentan los vídeos nuevos', async () => {
-    const { backend, added } = fakeBackend({ playlist: ['a', 'b', 'c', 'd'], existing: ['a', 'b'], remaining: 2 });
-    expect((await addToNotebook(backend, notebook, list)).message).toBe(m.playlistPartial(2, 4, 'Física', 2, 0));
+    const { backend, added } = fakeBackend({
+      playlist: ['a', 'b', 'c', 'd'],
+      existing: ['a', 'b'],
+      remaining: 2,
+    });
+    expect((await addToNotebook(backend, notebook, list)).message).toBe(
+      m.playlistPartial(2, 4, 'Física', 2, 0),
+    );
     expect(added).toEqual(['c', 'd']);
   });
 
@@ -125,7 +146,9 @@ describe('añadir una lista', () => {
       playlist: ['a', 'b', 'p', 'c', 'd'],
       rejected: { p: 'el vídeo es privado' },
     });
-    expect((await addToNotebook(backend, notebook, list)).message).toBe(m.playlistPartial(4, 5, 'Física', 0, 1));
+    expect((await addToNotebook(backend, notebook, list)).message).toBe(
+      m.playlistPartial(4, 5, 'Física', 0, 1),
+    );
     expect(added).toEqual(['a', 'b', 'c', 'd']);
   });
 
@@ -142,7 +165,10 @@ describe('añadir una lista', () => {
   });
 
   it('si la llamada entera falla, ningún vídeo cuenta como añadido (M-07)', async () => {
-    const { backend } = fakeBackend({ playlist: ['a', 'b'], failWith: 'límite de fuentes alcanzado' });
+    const { backend } = fakeBackend({
+      playlist: ['a', 'b'],
+      failWith: 'límite de fuentes alcanzado',
+    });
     expect((await addToNotebook(backend, notebook, list)).message).toBe(
       m.playlistNoneAdded('límite de fuentes alcanzado'),
     );
@@ -158,7 +184,9 @@ describe('añadir una lista', () => {
 
   it('cuenta una sola vez los vídeos repetidos en la lista', async () => {
     const { backend, added } = fakeBackend({ playlist: ['a', 'b', 'a'] });
-    expect((await addToNotebook(backend, notebook, list)).message).toBe(m.playlistAdded(2, 'Física'));
+    expect((await addToNotebook(backend, notebook, list)).message).toBe(
+      m.playlistAdded(2, 'Física'),
+    );
     expect(added).toEqual(['a', 'b']);
   });
 });

@@ -25,7 +25,9 @@ export function setupExport(tabId: number, showError: (message: string) => void)
     .catch(() => {});
 
   includeUser.addEventListener('change', () => {
-    browser.storage.local.set({ [EXPORT_OPTIONS_KEY]: currentOptions() }).catch((error) => showError(errorText(error)));
+    browser.storage.local
+      .set({ [EXPORT_OPTIONS_KEY]: currentOptions() })
+      .catch((error) => showError(errorText(error)));
   });
 
   async function onExport() {

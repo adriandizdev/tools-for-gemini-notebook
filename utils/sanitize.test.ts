@@ -3,7 +3,9 @@ import { sanitizeMessageHtml } from './sanitize';
 
 describe('sanitizeMessageHtml', () => {
   it('elimina scripts y manejadores de eventos', () => {
-    const html = sanitizeMessageHtml('<p>Hola</p><script>alert(1)</script><img src="x" onerror="alert(1)">');
+    const html = sanitizeMessageHtml(
+      '<p>Hola</p><script>alert(1)</script><img src="x" onerror="alert(1)">',
+    );
     expect(html).not.toContain('<script');
     expect(html).not.toContain('onerror');
     expect(html).toContain('<p>Hola</p>');
@@ -22,7 +24,9 @@ describe('sanitizeMessageHtml', () => {
   });
 
   it('conserva los marcadores de fórmula extraídos', () => {
-    const html = sanitizeMessageHtml('<span class="math-tex" data-display="false">\\frac{a}{b}</span>');
+    const html = sanitizeMessageHtml(
+      '<span class="math-tex" data-display="false">\\frac{a}{b}</span>',
+    );
     expect(html).toBe('<span class="math-tex" data-display="false">\\frac{a}{b}</span>');
   });
 

@@ -60,7 +60,11 @@ async function addPlaylist(backend: SourceBackend, notebook: Notebook, listId: s
 
   // La lista se añade completa o no se añade (RN-03); solo cuentan los vídeos nuevos (RN-12).
   if (remaining !== null && pending.length > remaining) {
-    return { ok: false, addedAny: false, message: m.playlistNoRoom(pending.length, notebook.title, remaining) };
+    return {
+      ok: false,
+      addedAny: false,
+      message: m.playlistNoRoom(pending.length, notebook.title, remaining),
+    };
   }
 
   const results = await addAll(backend, notebook.id, pending);
@@ -68,7 +72,11 @@ async function addPlaylist(backend: SourceBackend, notebook: Notebook, listId: s
   const rejected = results.filter((r): r is Rejected => !r.ok);
 
   if (pending.length && !added) {
-    return { ok: false, addedAny: false, message: m.playlistNoneAdded(rejected[0]?.reason ?? NO_RESPONSE) };
+    return {
+      ok: false,
+      addedAny: false,
+      message: m.playlistNoneAdded(rejected[0]?.reason ?? NO_RESPONSE),
+    };
   }
   if (!present && !rejected.length) {
     return { ok: true, addedAny: true, message: m.playlistAdded(added, notebook.title) };

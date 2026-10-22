@@ -12,7 +12,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "postinstall": "wxt prepare",
-    "lint": "oxlint --type-aware --deny-warnings"
+    "lint": "oxlint --type-aware --deny-warnings",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "dompurify": "^3.4.16",
@@ -22,6 +24,7 @@
     "jsdom": "^28.1.0",
     "oxlint": "^1.89.0",
     "oxlint-tsgolint": "^7.0.2004",
+    "prettier": "^3.9.10",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3",
     "wxt": "^0.21.4"

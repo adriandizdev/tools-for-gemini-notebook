@@ -3,7 +3,8 @@ import { type NotebookLmClient, RpcError } from './notebooklm-api';
 import { youtubeVideoUrl } from './page';
 
 /** NotebookLM no explica por qué rechaza un vídeo; su interfaz dice que no hay transcripción. */
-export const REJECTED_REASON = 'Gemini Notebook no puede importarlo (no es público o no tiene transcripción)';
+export const REJECTED_REASON =
+  'Gemini Notebook no puede importarlo (no es público o no tiene transcripción)';
 
 /** Une el cliente de NotebookLM y la lectura de listas de YouTube en lo que necesita `addToNotebook`. */
 export function createSourceBackend(
@@ -23,9 +24,14 @@ export function createSourceBackend(
       const notebook = await getNotebook(notebookId);
       return {
         // Las fuentes con error no cuentan como "ya presentes": el vídeo no está realmente.
-        youtubeIds: new Set(notebook.sources.flatMap((s) => (s.ready && s.youtubeId ? [s.youtubeId] : []))),
+        youtubeIds: new Set(
+          notebook.sources.flatMap((s) => (s.ready && s.youtubeId ? [s.youtubeId] : [])),
+        ),
         // Las fuentes con error sí ocupan sitio.
-        remaining: notebook.maxSources === null ? null : Math.max(0, notebook.maxSources - notebook.sources.length),
+        remaining:
+          notebook.maxSources === null
+            ? null
+            : Math.max(0, notebook.maxSources - notebook.sources.length),
       };
     },
 
@@ -54,7 +60,9 @@ export function createSourceBackend(
 
       const added = new Set(accepted.map((s) => s.youtubeId));
       return videoIds.map((videoId) =>
-        added.has(videoId) ? { videoId, ok: true } : { videoId, ok: false, reason: REJECTED_REASON },
+        added.has(videoId)
+          ? { videoId, ok: true }
+          : { videoId, ok: false, reason: REJECTED_REASON },
       );
     },
   };

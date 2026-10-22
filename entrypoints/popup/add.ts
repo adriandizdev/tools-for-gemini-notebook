@@ -13,7 +13,10 @@ import type { StatusKind } from './main';
 import { fillSelect } from './notebooks';
 
 /** Acción "Añadir a cuaderno" en un vídeo o una lista de YouTube. */
-export function setupAdd(target: SourceTarget, showStatus: (message: string, kind?: StatusKind) => void) {
+export function setupAdd(
+  target: SourceTarget,
+  showStatus: (message: string, kind?: StatusKind) => void,
+) {
   const addButton = document.querySelector<HTMLButtonElement>('#add')!;
   const form = document.querySelector<HTMLFormElement>('#notebook-form')!;
   const select = document.querySelector<HTMLSelectElement>('#notebook')!;
@@ -26,7 +29,9 @@ export function setupAdd(target: SourceTarget, showStatus: (message: string, kin
     showStatus('Cargando cuadernos…', 'info');
     try {
       // Se piden cada vez, para reflejar el estado actual de NotebookLM (RF-09).
-      const response: ListNotebooksResponse = await browser.runtime.sendMessage({ type: LIST_NOTEBOOKS });
+      const response: ListNotebooksResponse = await browser.runtime.sendMessage({
+        type: LIST_NOTEBOOKS,
+      });
       if (!response.ok) return showStatus(response.message);
       notebooks = response.notebooks;
       if (!notebooks.length) return showStatus(NO_NOTEBOOKS);
@@ -45,7 +50,10 @@ export function setupAdd(target: SourceTarget, showStatus: (message: string, kin
     const notebook = notebooks.find((n) => n.id === select.value);
     if (!notebook) return;
     confirm.disabled = addButton.disabled = true;
-    showStatus(target.kind === 'video' ? 'Añadiendo el vídeo…' : 'Añadiendo los vídeos de la lista…', 'info');
+    showStatus(
+      target.kind === 'video' ? 'Añadiendo el vídeo…' : 'Añadiendo los vídeos de la lista…',
+      'info',
+    );
     try {
       const request: AddToNotebookRequest = { type: ADD_TO_NOTEBOOK, notebook, target };
       const response: AddToNotebookResponse = await browser.runtime.sendMessage(request);

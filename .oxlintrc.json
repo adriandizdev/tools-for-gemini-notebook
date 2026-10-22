@@ -17,7 +17,5 @@
     "typescript/no-base-to-string": "error",
     "typescript/require-await": "error"
   },
-  "overrides": [
-    { "files": ["**/*.test.ts"], "rules": { "typescript/require-await": "off" } }
-  ]
+  "overrides": [{ "files": ["**/*.test.ts"], "rules": { "typescript/require-await": "off" } }]
 }

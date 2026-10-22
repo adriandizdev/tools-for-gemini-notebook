@@ -31,8 +31,10 @@ export function parseVisorPath(pathname: string): VisorPage | null {
   return topicId ? { subjectId: subjectId!, topicId } : { subjectId: subjectId! };
 }
 
-export const topicsPath = (subjectId: string) => `/api/v3/subjects/${encodeURIComponent(subjectId)}/user-topics`;
-export const topicPdfPath = (topicId: string) => `/api/v1/topics/${encodeURIComponent(topicId)}/download`;
+export const topicsPath = (subjectId: string) =>
+  `/api/v3/subjects/${encodeURIComponent(subjectId)}/user-topics`;
+export const topicPdfPath = (topicId: string) =>
+  `/api/v1/topics/${encodeURIComponent(topicId)}/download`;
 
 /** Dirección de la página del tema: identifica el tema en el listado y en los estados. */
 export const topicPageUrl = (subjectId: string, topicId: string) =>
@@ -49,7 +51,12 @@ export function topicsFromResponse(body: unknown, topicId?: string): UnirTopic[]
   for (const topic of topics) {
     const id = dig(topic, 'topicId');
     const title = dig(topic, 'title');
-    if ((typeof id !== 'string' && typeof id !== 'number') || typeof title !== 'string' || !title.trim()) continue;
+    if (
+      (typeof id !== 'string' && typeof id !== 'number') ||
+      typeof title !== 'string' ||
+      !title.trim()
+    )
+      continue;
     result.push({ topicId: String(id), title: title.trim() });
   }
   return topicId === undefined ? result : result.filter((topic) => topic.topicId === topicId);
@@ -59,6 +66,7 @@ export function topicsFromResponse(body: unknown, topicId?: string): UnirTopic[]
 export function topicPdfUrl({ status, body }: VisorApiResult): string {
   if (status === 401 || status === 403) throw new Error(CAMPUS_SESSION_EXPIRED);
   const url = dig(body, 'downloadUrl');
-  if (status < 200 || status >= 300 || typeof url !== 'string' || !url) throw new Error(TOPIC_NOT_DELIVERED);
+  if (status < 200 || status >= 300 || typeof url !== 'string' || !url)
+    throw new Error(TOPIC_NOT_DELIVERED);
   return url;
 }

@@ -14,7 +14,8 @@ export const videoAlreadyPresent = (notebook: string) =>
 export const playlistNoRoom = (n: number, notebook: string, m: number) =>
   `La lista tiene ${n} vídeos nuevos, pero «${notebook}» solo admite ${m} fuentes más. No se ha añadido ningún vídeo.`; // M-05
 
-export const videoRejected = (reason: string) => `No se ha podido añadir el vídeo: ${clean(reason)}.`; // M-06
+export const videoRejected = (reason: string) =>
+  `No se ha podido añadir el vídeo: ${clean(reason)}.`; // M-06
 
 export const playlistNoneAdded = (reason: string) =>
   `No se ha añadido ningún vídeo de la lista: ${clean(reason)}.`; // M-07
@@ -35,7 +36,13 @@ export const documentAdded = (notebook: string) => `Documento añadido a «${not
 export const documentsAdded = (n: number, notebook: string) =>
   `Se han añadido ${n} documentos a «${notebook}».`; // M-13
 
-export const documentsPartial = (n: number, total: number, notebook: string, k: number, m: number) =>
+export const documentsPartial = (
+  n: number,
+  total: number,
+  notebook: string,
+  k: number,
+  m: number,
+) =>
   `Se han añadido ${n} de ${total} documentos a «${notebook}». ${k} ya estaban en el cuaderno y ${m} no se han podido añadir.`; // M-14
 
 export const documentAlreadyPresent = (notebook: string) =>
@@ -44,9 +51,11 @@ export const documentAlreadyPresent = (notebook: string) =>
 export const documentsNoRoom = (n: number, notebook: string, m: number) =>
   `Ha seleccionado ${n} documentos nuevos, pero «${notebook}» solo admite ${m} fuentes más. Seleccione menos documentos.`; // M-16
 
-export const documentRejected = (reason: string) => `No se ha podido añadir el documento: ${clean(reason)}.`; // M-17
+export const documentRejected = (reason: string) =>
+  `No se ha podido añadir el documento: ${clean(reason)}.`; // M-17
 
-export const documentsNoneAdded = (reason: string) => `No se ha añadido ningún documento: ${clean(reason)}.`; // M-18
+export const documentsNoneAdded = (reason: string) =>
+  `No se ha añadido ningún documento: ${clean(reason)}.`; // M-18
 
 /** El motivo va seguido de un punto en la tabla: se quita el suyo para no duplicarlo. */
 const clean = (reason: string) => reason.trim().replace(/\.+$/, '');

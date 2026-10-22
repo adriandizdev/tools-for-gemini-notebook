@@ -49,7 +49,10 @@ function replaceMath(root: Element) {
 }
 
 function stripNoise(root: Element) {
-  const walker = root.ownerDocument.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT);
+  const walker = root.ownerDocument.createTreeWalker(
+    root,
+    NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT,
+  );
   const comments: ChildNode[] = [];
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
     if (node.nodeType === Node.COMMENT_NODE) {

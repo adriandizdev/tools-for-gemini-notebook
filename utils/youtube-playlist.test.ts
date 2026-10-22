@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { listPlaylistVideos, parseContinuationResponse, parsePlaylistHtml } from './youtube-playlist';
+import {
+  listPlaylistVideos,
+  parseContinuationResponse,
+  parsePlaylistHtml,
+} from './youtube-playlist';
 import playlist from './__fixtures__/youtube-playlist.html?raw';
 import playlistContinuation from './__fixtures__/youtube-playlist-continuation.json?raw';
 import playlistLong from './__fixtures__/youtube-playlist-long.html?raw';
@@ -28,13 +32,17 @@ describe('parsePlaylistHtml', () => {
   });
 
   it('falla si la página no es una lista', () => {
-    expect(() => parsePlaylistHtml('<html></html>')).toThrow('No se ha podido leer la lista de reproducción');
+    expect(() => parsePlaylistHtml('<html></html>')).toThrow(
+      'No se ha podido leer la lista de reproducción',
+    );
   });
 });
 
 describe('parseContinuationResponse', () => {
   it('lee los vídeos de la siguiente página', () => {
-    const page = parseContinuationResponse(JSON.parse(fixture('youtube-playlist-continuation.json')));
+    const page = parseContinuationResponse(
+      JSON.parse(fixture('youtube-playlist-continuation.json')),
+    );
     expect(page.videoIds).toHaveLength(2);
     expect(page.continuation).toBeNull();
   });
@@ -44,15 +52,22 @@ describe('listPlaylistVideos', () => {
   it('sigue las continuaciones hasta el final', async () => {
     const requests: { url: string; body?: string }[] = [];
     const fetchFn = (async (input: RequestInfo | URL, init?: RequestInit) => {
-      requests.push({ url: input instanceof Request ? input.url : String(input), body: init?.body as string | undefined });
+      requests.push({
+        url: input instanceof Request ? input.url : String(input),
+        body: init?.body as string | undefined,
+      });
       return new Response(
-        requests.length === 1 ? fixture('youtube-playlist-long.html') : fixture('youtube-playlist-continuation.json'),
+        requests.length === 1
+          ? fixture('youtube-playlist-long.html')
+          : fixture('youtube-playlist-continuation.json'),
       );
     }) as typeof fetch;
 
     expect(await listPlaylistVideos('UU123', fetchFn)).toHaveLength(5);
     expect(requests[0]!.url).toBe('https://www.youtube.com/playlist?list=UU123');
     expect(requests[1]!.url).toContain('/youtubei/v1/browse');
-    expect((JSON.parse(requests[1]!.body!) as { continuation: string }).continuation).toMatch(/^4qmF/);
+    expect((JSON.parse(requests[1]!.body!) as { continuation: string }).continuation).toMatch(
+      /^4qmF/,
+    );
   });
 });

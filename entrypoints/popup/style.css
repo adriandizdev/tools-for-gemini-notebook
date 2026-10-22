@@ -2,7 +2,9 @@ body {
   width: 260px;
   margin: 0;
   padding: 16px;
-  font: 14px/1.4 system-ui, sans-serif;
+  font:
+    14px/1.4 system-ui,
+    sans-serif;
 }
 
 h1 {

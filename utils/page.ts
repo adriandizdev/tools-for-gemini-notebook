@@ -34,7 +34,8 @@ export function classifyTab(url: string | undefined): PageKind {
 
   if (YOUTUBE_HOSTS.includes(parsed.hostname)) {
     // Un vídeo que se reproduce dentro de una lista cuenta como vídeo (RF-10).
-    const videoId = parsed.pathname === '/watch' ? parsed.searchParams.get('v') : shortsId(parsed.pathname);
+    const videoId =
+      parsed.pathname === '/watch' ? parsed.searchParams.get('v') : shortsId(parsed.pathname);
     if (videoId) return { kind: 'video', videoId };
     const listId = parsed.searchParams.get('list');
     if (parsed.pathname === '/playlist' && listId) return { kind: 'playlist', listId };

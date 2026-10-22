@@ -16,7 +16,8 @@ export const NOT_A_DOCUMENT = 'la web no ha devuelto el documento, sino una pág
 export function createDocumentBackend(
   client: NotebookLmClient,
   fetchFn: typeof fetch = fetch,
-  resolveUrl: (document: DocumentToAdd) => Promise<string> = (document) => Promise.resolve(document.url),
+  resolveUrl: (document: DocumentToAdd) => Promise<string> = (document) =>
+    Promise.resolve(document.url),
 ): DocumentBackend {
   async function getNotebook(notebookId: string) {
     const notebook = (await client.listNotebooks()).find((n) => n.id === notebookId);
@@ -29,7 +30,10 @@ export function createDocumentBackend(
       const notebook = await getNotebook(notebookId);
       return {
         titles: new Set(notebook.sources.map((s) => s.title)),
-        remaining: notebook.maxSources === null ? null : Math.max(0, notebook.maxSources - notebook.sources.length),
+        remaining:
+          notebook.maxSources === null
+            ? null
+            : Math.max(0, notebook.maxSources - notebook.sources.length),
       };
     },
 
@@ -74,6 +78,7 @@ async function download(url: string, fetchFn: typeof fetch): Promise<Blob> {
   if (response.status === 404 || response.status === 410) throw new Error(NOT_FOUND);
   if (!response.ok) throw new Error(`${DOWNLOAD_FAILED} (HTTP ${response.status})`);
   // Muchas webs responden a un documento privado con su página de inicio de sesión.
-  if (response.headers.get('content-type')?.startsWith('text/html')) throw new Error(NOT_A_DOCUMENT);
+  if (response.headers.get('content-type')?.startsWith('text/html'))
+    throw new Error(NOT_A_DOCUMENT);
   return response.blob();
 }

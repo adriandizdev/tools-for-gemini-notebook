@@ -10,14 +10,25 @@ import {
 import type { NotebookLmClient, Source } from './notebooklm-api';
 
 const source = (id: string, title: string): Source => ({ id, title, youtubeId: null, ready: true });
-const memoria: DocumentToAdd = { url: 'https://e.es/Memoria_2025.pdf', kind: 'pdf', name: 'Memoria 2025' };
+const memoria: DocumentToAdd = {
+  url: 'https://e.es/Memoria_2025.pdf',
+  kind: 'pdf',
+  name: 'Memoria 2025',
+};
 
 /** Doble de NotebookLM que registra cada paso de la subida. */
 function fakeClient({ uploadFails = false, renameFails = false } = {}) {
   const steps: string[] = [];
   const client: NotebookLmClient = {
     async listNotebooks() {
-      return [{ id: 'nb', title: 'Prueba', sources: [source('a', 'Guía'), source('b', 'Temario')], maxSources: 300 }];
+      return [
+        {
+          id: 'nb',
+          title: 'Prueba',
+          sources: [source('a', 'Guía'), source('b', 'Temario')],
+          maxSources: 300,
+        },
+      ];
     },
     addUrls: () => Promise.reject(new Error('no se usa')),
     async deleteSources(_id, ids) {
@@ -53,7 +64,11 @@ describe('createDocumentBackend', () => {
   it('sube el documento con la extensión y después lo renombra al nombre del listado', async () => {
     const { client, steps } = fakeClient();
     await createDocumentBackend(client, respond(pdf())).addDocument('nb', memoria);
-    expect(steps).toEqual(['register Memoria 2025.pdf', 'upload src1 Memoria 2025.pdf 8', 'rename src1 Memoria 2025']);
+    expect(steps).toEqual([
+      'register Memoria 2025.pdf',
+      'upload src1 Memoria 2025.pdf 8',
+      'rename src1 Memoria 2025',
+    ]);
   });
 
   it('usa la extensión de su tipo aunque la dirección no la tenga', async () => {
@@ -65,15 +80,17 @@ describe('createDocumentBackend', () => {
 
   it('borra la fuente si la subida falla después de registrarla', async () => {
     const { client, steps } = fakeClient({ uploadFails: true });
-    await expect(createDocumentBackend(client, respond(pdf())).addDocument('nb', memoria)).rejects.toThrow(
-      'Gemini Notebook no admite la subida',
-    );
+    await expect(
+      createDocumentBackend(client, respond(pdf())).addDocument('nb', memoria),
+    ).rejects.toThrow('Gemini Notebook no admite la subida');
     expect(steps.at(-1)).toBe('delete src1');
   });
 
   it('da el documento por añadido aunque no se pueda renombrar', async () => {
     const { client } = fakeClient({ renameFails: true });
-    await expect(createDocumentBackend(client, respond(pdf())).addDocument('nb', memoria)).resolves.toBeUndefined();
+    await expect(
+      createDocumentBackend(client, respond(pdf())).addDocument('nb', memoria),
+    ).resolves.toBeUndefined();
   });
 
   describe('CB-03: documentos a los que no se puede acceder', () => {
@@ -90,11 +107,16 @@ describe('createDocumentBackend', () => {
       ['un fallo de red', () => Promise.reject(new TypeError('Failed to fetch')), DOWNLOAD_FAILED],
     ];
 
-    it.each(cases)('%s: falla con su motivo sin tocar el cuaderno', async (_name, fetchFn, reason) => {
-      const { client, steps } = fakeClient();
-      await expect(createDocumentBackend(client, fetchFn).addDocument('nb', memoria)).rejects.toThrow(reason);
-      expect(steps).toEqual([]);
-    });
+    it.each(cases)(
+      '%s: falla con su motivo sin tocar el cuaderno',
+      async (_name, fetchFn, reason) => {
+        const { client, steps } = fakeClient();
+        await expect(
+          createDocumentBackend(client, fetchFn).addDocument('nb', memoria),
+        ).rejects.toThrow(reason);
+        expect(steps).toEqual([]);
+      },
+    );
   });
 
   it('REQ-003: descarga de la dirección que da `resolveUrl`', async () => {
@@ -104,16 +126,19 @@ describe('createDocumentBackend', () => {
       return Promise.resolve(pdf());
     }) as typeof fetch;
     const resolveUrl = () => Promise.resolve('https://cms.unir.net/file/1/esl-ES');
-    await createDocumentBackend(fakeClient().client, fetchFn, resolveUrl).addDocument('nb', memoria);
+    await createDocumentBackend(fakeClient().client, fetchFn, resolveUrl).addDocument(
+      'nb',
+      memoria,
+    );
     expect(downloaded).toBe('https://cms.unir.net/file/1/esl-ES');
   });
 
   it('REQ-003, CB-03: si no hay dirección, falla con su motivo sin tocar el cuaderno', async () => {
     const { client, steps } = fakeClient();
     const resolveUrl = () => Promise.reject(new Error('la sesión del campus ha caducado'));
-    await expect(createDocumentBackend(client, respond(pdf()), resolveUrl).addDocument('nb', memoria)).rejects.toThrow(
-      'la sesión del campus ha caducado',
-    );
+    await expect(
+      createDocumentBackend(client, respond(pdf()), resolveUrl).addDocument('nb', memoria),
+    ).rejects.toThrow('la sesión del campus ha caducado');
     expect(steps).toEqual([]);
   });
 

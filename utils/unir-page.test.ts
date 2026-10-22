@@ -6,10 +6,13 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const authorization = (init: RequestInit | undefined) => new Headers(init?.headers).get('authorization');
+const authorization = (init: RequestInit | undefined) =>
+  new Headers(init?.headers).get('authorization');
 
 function stubFetch(response: () => Promise<Response>) {
-  const fetchFn = vi.fn<(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>>(() => response());
+  const fetchFn = vi.fn<(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>>(() =>
+    response(),
+  );
   vi.stubGlobal('fetch', fetchFn);
   return fetchFn;
 }
@@ -17,7 +20,9 @@ function stubFetch(response: () => Promise<Response>) {
 describe('callVisorApi', () => {
   it('llama a la API con el token de la página y devuelve el JSON', async () => {
     sessionStorage.setItem('access_token', 'tok');
-    const fetchFn = stubFetch(() => Promise.resolve(Response.json({ downloadUrl: 'https://cms.unir.net/f' })));
+    const fetchFn = stubFetch(() =>
+      Promise.resolve(Response.json({ downloadUrl: 'https://cms.unir.net/f' })),
+    );
     const result = await callVisorApi('POST', '/api/v1/topics/1/download');
     expect(result).toEqual({ status: 200, body: { downloadUrl: 'https://cms.unir.net/f' } });
     const [path, init] = fetchFn.mock.calls[0]!;

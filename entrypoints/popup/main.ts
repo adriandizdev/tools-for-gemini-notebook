@@ -26,7 +26,10 @@ browser.tabs
     } else if (page.kind === 'video' || page.kind === 'playlist') {
       document.querySelector<HTMLElement>('#add-section')!.hidden = false;
       setupAdd(page, showStatus);
-    } else if ((page.kind === 'web' || page.kind === 'document' || page.kind === 'unir') && tab?.id !== undefined) {
+    } else if (
+      (page.kind === 'web' || page.kind === 'document' || page.kind === 'unir') &&
+      tab?.id !== undefined
+    ) {
       document.body.classList.add('documents');
       document.querySelector<HTMLElement>('#documents-section')!.hidden = false;
       setupDocuments(tab.id, page, showStatus);

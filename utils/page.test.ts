@@ -17,7 +17,10 @@ describe('classifyTab', () => {
     // REQ-002: cualquier otra web busca documentos, y un PDF abierto directamente es un documento.
     ['https://example.com/watch?v=dQw4w9WgXcQ', { kind: 'web' }],
     ['http://campus.example.es/asignatura/', { kind: 'web' }],
-    ['https://example.com/docs/guia.pdf', { kind: 'document', url: 'https://example.com/docs/guia.pdf' }],
+    [
+      'https://example.com/docs/guia.pdf',
+      { kind: 'document', url: 'https://example.com/docs/guia.pdf' },
+    ],
     // Un Word abierto en la pestaña no es un PDF abierto en el navegador: se busca como web.
     ['https://example.com/docs/guia.docx', { kind: 'web' }],
     // REQ-003: en el visor de UNIR se listan los temas en lugar de buscar documentos.

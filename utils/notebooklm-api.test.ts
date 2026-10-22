@@ -38,7 +38,9 @@ describe('parseSession', () => {
   });
 
   it('devuelve null sin sesión (la página no trae SNlM0e)', () => {
-    expect(parseSession('<script>window.WIZ_global_data = {"FdrFJe":"123","cfb2h":"x"};</script>')).toBeNull();
+    expect(
+      parseSession('<script>window.WIZ_global_data = {"FdrFJe":"123","cfb2h":"x"};</script>'),
+    ).toBeNull();
   });
 });
 
@@ -83,7 +85,9 @@ describe('parseNotebooks', () => {
   });
 
   it('acepta una cuenta sin cuadernos', () => {
-    expect(parseNotebooks(parseBatchExecute(fixture('list-notebooks-empty.txt'), 'wXbhsf'))).toEqual([]);
+    expect(
+      parseNotebooks(parseBatchExecute(fixture('list-notebooks-empty.txt'), 'wXbhsf')),
+    ).toEqual([]);
   });
 });
 
@@ -119,7 +123,9 @@ describe('batchExecuteRequest', () => {
     expect(parsed.searchParams.get('source-path')).toBe(`/notebook/${PRUEBA}`);
     const body = new URLSearchParams(init.body);
     expect(body.get('at')).toBe('AT_TOKEN');
-    expect(JSON.parse(body.get('f.req')!)).toEqual([[['izAoDd', JSON.stringify(args), null, 'generic']]]);
+    expect(JSON.parse(body.get('f.req')!)).toEqual([
+      [['izAoDd', JSON.stringify(args), null, 'generic']],
+    ]);
   });
 });
 
@@ -145,7 +151,8 @@ describe('createNotebookLmClient', () => {
 
 describe('subida de ficheros (REQ-002)', () => {
   const SOURCE = 'aea809ec-2a01-47cf-a41d-6cb976dab683';
-  const UPLOAD_URL = 'https://notebook.google.com/upload/_/?authuser=0&upload_id=abc&upload_protocol=resumable';
+  const UPLOAD_URL =
+    'https://notebook.google.com/upload/_/?authuser=0&upload_id=abc&upload_protocol=resumable';
 
   interface Call {
     url: string;
@@ -158,8 +165,14 @@ describe('subida de ficheros (REQ-002)', () => {
     const calls: Call[] = [];
     const fetchFn = ((input: RequestInfo | URL, init?: RequestInit) => {
       const url = input instanceof Request ? input.url : String(input);
-      calls.push({ url, headers: (init?.headers ?? {}) as Record<string, string>, body: init?.body });
-      return Promise.resolve(url === 'https://notebook.google.com/' ? new Response(homeHtml) : routes(url));
+      calls.push({
+        url,
+        headers: (init?.headers ?? {}) as Record<string, string>,
+        body: init?.body,
+      });
+      return Promise.resolve(
+        url === 'https://notebook.google.com/' ? new Response(homeHtml) : routes(url),
+      );
     }) as typeof fetch;
     return { client: createNotebookLmClient(fetchFn), calls };
   }
@@ -176,7 +189,9 @@ describe('subida de ficheros (REQ-002)', () => {
     const { client, calls } = fakeFetch((url) =>
       url === UPLOAD_URL
         ? new Response('OK', { headers: { 'x-goog-upload-status': 'final' } })
-        : new Response('', { headers: { 'x-goog-upload-url': UPLOAD_URL, 'x-goog-upload-status': 'active' } }),
+        : new Response('', {
+            headers: { 'x-goog-upload-url': UPLOAD_URL, 'x-goog-upload-status': 'active' },
+          }),
     );
     const content = new Blob(['%PDF-1.4']);
     await client.uploadFile(PRUEBA, SOURCE, 'Guía.pdf', content);
@@ -188,14 +203,23 @@ describe('subida de ficheros (REQ-002)', () => {
       'x-goog-upload-protocol': 'resumable',
       'x-goog-upload-header-content-length': String(content.size),
     });
-    expect(JSON.parse(start!.body as string)).toEqual({ PROJECT_ID: PRUEBA, SOURCE_NAME: 'Guía.pdf', SOURCE_ID: SOURCE });
+    expect(JSON.parse(start!.body as string)).toEqual({
+      PROJECT_ID: PRUEBA,
+      SOURCE_NAME: 'Guía.pdf',
+      SOURCE_ID: SOURCE,
+    });
     expect(upload!.url).toBe(UPLOAD_URL);
-    expect(upload!.headers).toMatchObject({ 'x-goog-upload-command': 'upload, finalize', 'x-goog-upload-offset': '0' });
+    expect(upload!.headers).toMatchObject({
+      'x-goog-upload-command': 'upload, finalize',
+      'x-goog-upload-offset': '0',
+    });
     expect(upload!.body).toBe(content);
   });
 
   it('falla con el motivo de Gemini Notebook si rechaza la subida', async () => {
-    const { client } = fakeFetch(() => new Response('Unsupported file extension for file', { status: 400 }));
+    const { client } = fakeFetch(
+      () => new Response('Unsupported file extension for file', { status: 400 }),
+    );
     await expect(client.uploadFile(PRUEBA, SOURCE, 'Guía', new Blob(['x']))).rejects.toThrow(
       'Unsupported file extension for file',
     );
@@ -207,7 +231,9 @@ describe('subida de ficheros (REQ-002)', () => {
         ? new Response('', { status: 500 })
         : new Response('', { headers: { 'x-goog-upload-url': UPLOAD_URL } }),
     );
-    await expect(client.uploadFile(PRUEBA, SOURCE, 'Guía.pdf', new Blob(['x']))).rejects.toThrow('HTTP 500');
+    await expect(client.uploadFile(PRUEBA, SOURCE, 'Guía.pdf', new Blob(['x']))).rejects.toThrow(
+      'HTTP 500',
+    );
   });
 
   it('renombra la fuente con b7Wfje', async () => {

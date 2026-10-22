@@ -42,8 +42,14 @@ const doc = (n: number, name = `Documento ${n}`): DocumentToAdd => ({
 
 async function run(backend: DocumentBackend, documents: DocumentToAdd[]) {
   const statuses: [string, DocumentStatus][] = [];
-  const response = await addDocuments(backend, notebook, documents, (url, status) => statuses.push([url, status]));
-  return { response, statuses, last: (url: string) => statuses.filter(([u]) => u === url).at(-1)?.[1] };
+  const response = await addDocuments(backend, notebook, documents, (url, status) =>
+    statuses.push([url, status]),
+  );
+  return {
+    response,
+    statuses,
+    last: (url: string) => statuses.filter(([u]) => u === url).at(-1)?.[1],
+  };
 }
 
 describe('añadir un documento', () => {
@@ -59,8 +65,15 @@ describe('añadir un documento', () => {
     const { backend, added } = fakeBackend({ titles: ['Memoria 2025'] });
     const { response, last } = await run(backend, [doc(1, 'Memoria 2025')]);
     expect(added).toEqual([]);
-    expect(last(doc(1).url)).toEqual({ state: 'present', message: m.documentAlreadyPresent('Física') });
-    expect(response).toEqual({ ok: true, addedAny: false, message: m.documentAlreadyPresent('Física') });
+    expect(last(doc(1).url)).toEqual({
+      state: 'present',
+      message: m.documentAlreadyPresent('Física'),
+    });
+    expect(response).toEqual({
+      ok: true,
+      addedAny: false,
+      message: m.documentAlreadyPresent('Física'),
+    });
   });
 
   it('CA-12 (CB-03): si no se puede descargar, muestra M-17 con el motivo en su estado', async () => {
@@ -99,7 +112,11 @@ describe('añadir una selección', () => {
     const { response, statuses } = await run(backend, [doc(1), doc(2), doc(3)]);
     expect(added).toEqual([]);
     expect(statuses).toEqual([]);
-    expect(response).toEqual({ ok: false, addedAny: false, message: m.documentsNoRoom(3, 'Física', 2) });
+    expect(response).toEqual({
+      ok: false,
+      addedAny: false,
+      message: m.documentsNoRoom(3, 'Física', 2),
+    });
   });
 
   it('SUP-03: para el cupo solo cuentan los documentos que no están ya en el cuaderno', async () => {
@@ -113,7 +130,10 @@ describe('añadir una selección', () => {
     const { backend, added } = fakeBackend({ failing: { [doc(2).url]: 'el documento no existe' } });
     const { response, last } = await run(backend, [doc(1), doc(2), doc(3)]);
     expect(added.map((d) => d.url)).toEqual([doc(1).url, doc(3).url]);
-    expect(last(doc(2).url)).toEqual({ state: 'failed', message: m.documentRejected('el documento no existe') });
+    expect(last(doc(2).url)).toEqual({
+      state: 'failed',
+      message: m.documentRejected('el documento no existe'),
+    });
     expect(response).toEqual({
       ok: true,
       addedAny: true,

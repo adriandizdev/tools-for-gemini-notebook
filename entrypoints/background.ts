@@ -23,16 +23,18 @@ import { listPlaylistVideos } from '@/utils/youtube-playlist';
 // del usuario) y no en el popup, que se cierra en cuanto pierde el foco.
 export default defineBackground(() => {
   // `listNotebooks` y `add` no rechazan nunca: convierten cualquier error en una respuesta.
-  browser.runtime.onMessage.addListener((message: { type?: unknown } | undefined, _sender, sendResponse) => {
-    if (message?.type === LIST_NOTEBOOKS) {
-      void listNotebooks().then(sendResponse);
-      return true;
-    }
-    if (message?.type === ADD_TO_NOTEBOOK) {
-      void add(message as AddToNotebookRequest).then(sendResponse);
-      return true;
-    }
-  });
+  browser.runtime.onMessage.addListener(
+    (message: { type?: unknown } | undefined, _sender, sendResponse) => {
+      if (message?.type === LIST_NOTEBOOKS) {
+        void listNotebooks().then(sendResponse);
+        return true;
+      }
+      if (message?.type === ADD_TO_NOTEBOOK) {
+        void add(message as AddToNotebookRequest).then(sendResponse);
+        return true;
+      }
+    },
+  );
 
   browser.runtime.onConnect.addListener((port) => {
     if (port.name !== ADD_DOCUMENTS_PORT) return;
@@ -58,12 +60,15 @@ async function addDocumentsFromPopup(
   let response: AddToNotebookResponse;
   try {
     const backend = createDocumentBackend(createNotebookLmClient(), fetch, resolveDocumentUrl);
-    response = await addDocuments(backend, notebook, documents, (url, status) => post({ type: 'status', url, status }));
+    response = await addDocuments(backend, notebook, documents, (url, status) =>
+      post({ type: 'status', url, status }),
+    );
   } catch (error) {
     response = { ok: false, addedAny: false, message: errorMessage(error) };
   }
   // Se recuerda aquí y no en el popup, que puede haberse cerrado (RN-10, RN-16).
-  if (response.addedAny) await browser.storage.local.set({ [LAST_NOTEBOOK_KEY]: notebook.id }).catch(() => {});
+  if (response.addedAny)
+    await browser.storage.local.set({ [LAST_NOTEBOOK_KEY]: notebook.id }).catch(() => {});
   post({ type: 'done', response });
 }
 
@@ -98,7 +103,9 @@ async function listNotebooks(): Promise<ListNotebooksResponse> {
 
 async function add({ notebook, target }: AddToNotebookRequest): Promise<AddToNotebookResponse> {
   try {
-    const backend = createSourceBackend(createNotebookLmClient(), (listId) => listPlaylistVideos(listId));
+    const backend = createSourceBackend(createNotebookLmClient(), (listId) =>
+      listPlaylistVideos(listId),
+    );
     return await addToNotebook(backend, notebook, target);
   } catch (error) {
     return { ok: false, addedAny: false, message: errorMessage(error) };

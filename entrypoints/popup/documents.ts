@@ -27,7 +27,11 @@ import { fillSelect } from './notebooks';
 const SIZE_CONCURRENCY = 6;
 const SIZE_TIMEOUT_MS = 3000;
 
-const KIND_LABEL: Record<DocumentKind, string> = { pdf: 'PDF', word: 'Word', powerpoint: 'PowerPoint' };
+const KIND_LABEL: Record<DocumentKind, string> = {
+  pdf: 'PDF',
+  word: 'Word',
+  powerpoint: 'PowerPoint',
+};
 const STATE_LABEL = { adding: 'Añadiendo…', added: 'Añadido' } as const;
 
 interface Row {
@@ -81,7 +85,8 @@ export function setupDocuments(
   function setState(row: Row, status: DocumentStatus | null) {
     row.state.className = `document-state ${status?.state ?? ''}`;
     if (!status) row.state.textContent = '';
-    else if (status.state === 'adding' || status.state === 'added') row.state.textContent = STATE_LABEL[status.state];
+    else if (status.state === 'adding' || status.state === 'added')
+      row.state.textContent = STATE_LABEL[status.state];
     else row.state.textContent = status.message;
     if (status?.state === 'added') row.checkbox.checked = false;
   }
@@ -107,7 +112,9 @@ export function setupDocuments(
     const meta = document.createElement('p');
     meta.className = 'document-state';
     meta.textContent =
-      candidate.unirTopicId === undefined ? `${KIND_LABEL[candidate.kind]} · ${candidate.fileName}` : KIND_LABEL.pdf;
+      candidate.unirTopicId === undefined
+        ? `${KIND_LABEL[candidate.kind]} · ${candidate.fileName}`
+        : KIND_LABEL.pdf;
     item.append(checkbox, name, add, meta, state);
 
     const row: Row = { candidate, proposed, item, checkbox, name, add, state };
@@ -148,7 +155,9 @@ export function setupDocuments(
         url: candidate.url,
         kind: candidate.kind,
         name: sourceName(name.value, proposed),
-        ...(candidate.unirTopicId === undefined ? {} : { unirTopic: { tabId, topicId: candidate.unirTopicId } }),
+        ...(candidate.unirTopicId === undefined
+          ? {}
+          : { unirTopic: { tabId, topicId: candidate.unirTopicId } }),
       })),
     };
     port.postMessage(request);
@@ -156,7 +165,9 @@ export function setupDocuments(
 
   async function loadNotebooks() {
     try {
-      const response: ListNotebooksResponse = await browser.runtime.sendMessage({ type: LIST_NOTEBOOKS });
+      const response: ListNotebooksResponse = await browser.runtime.sendMessage({
+        type: LIST_NOTEBOOKS,
+      });
       if (!response.ok) return showStatus(response.message);
       notebooks = response.notebooks;
       if (!notebooks.length) return showStatus(NO_NOTEBOOKS);
@@ -196,7 +207,10 @@ export function setupDocuments(
       return candidate ? [candidate] : [];
     }
     try {
-      const [injection] = await browser.scripting.executeScript({ target: { tabId }, func: scanPage });
+      const [injection] = await browser.scripting.executeScript({
+        target: { tabId },
+        func: scanPage,
+      });
       return candidatesFromScan(injection?.result ?? []);
     } catch {
       // Páginas en las que el navegador no deja buscar (Chrome Web Store, visores internos…).
@@ -262,7 +276,9 @@ export function setupDocuments(
   }
 
   select.addEventListener('change', updateButtons);
-  addSelected.addEventListener('click', () => addDocuments([...rows.values()].filter((row) => row.checkbox.checked)));
+  addSelected.addEventListener('click', () =>
+    addDocuments([...rows.values()].filter((row) => row.checkbox.checked)),
+  );
   grant.addEventListener('click', () => void requestPermission());
 
   void browser.permissions

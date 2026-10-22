@@ -19,7 +19,8 @@ async function main() {
   const key = conversationStorageKey(id);
   const conversation = (await browser.storage.session.get(key))[key] as Conversation | undefined;
   if (!conversation) {
-    container.textContent = 'La conversación ya no está disponible. Vuelve a exportarla desde NotebookLM.';
+    container.textContent =
+      'La conversación ya no está disponible. Vuelve a exportarla desde NotebookLM.';
     return;
   }
   await browser.storage.session.remove(key);

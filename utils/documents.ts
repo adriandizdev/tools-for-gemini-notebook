@@ -85,7 +85,8 @@ function toCandidate(item: ScannedItem): DocumentCandidate | null {
   const url = normalizeUrl(target);
   if (!url) return null;
   // Un PDF incrustado puede no tener extensión, pero sí `type="application/pdf"`.
-  const kind = documentKind(url) ?? (item.embedded && item.type === 'application/pdf' ? 'pdf' : null);
+  const kind =
+    documentKind(url) ?? (item.embedded && item.type === 'application/pdf' ? 'pdf' : null);
   // De lo incrustado solo cuentan los PDF (RN-14).
   if (!kind || (item.embedded && kind !== 'pdf')) return null;
   return { url, fileName: fileNameFromUrl(url), kind };

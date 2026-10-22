@@ -25,9 +25,15 @@ export function scanPage(): ScannedItem[] {
     }
   }
 
-  for (const el of Array.from(document.querySelectorAll<HTMLElement>('iframe[src], embed[src], object[data]'))) {
+  for (const el of Array.from(
+    document.querySelectorAll<HTMLElement>('iframe[src], embed[src], object[data]'),
+  )) {
     const url =
-      el instanceof HTMLObjectElement ? el.data : el instanceof HTMLIFrameElement || el instanceof HTMLEmbedElement ? el.src : '';
+      el instanceof HTMLObjectElement
+        ? el.data
+        : el instanceof HTMLIFrameElement || el instanceof HTMLEmbedElement
+          ? el.src
+          : '';
     if (url) items.push({ url, embedded: true, type: el.getAttribute('type') });
   }
 

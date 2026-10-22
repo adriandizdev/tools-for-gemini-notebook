@@ -59,7 +59,9 @@ describe('búsqueda en la página', () => {
   });
 
   it('CA-27 (RN-14): de lo incrustado solo cuentan los PDF', () => {
-    const found = scanHtml('<iframe src="/presentacion.pptx"></iframe><iframe src="/guia.pdf"></iframe>');
+    const found = scanHtml(
+      '<iframe src="/presentacion.pptx"></iframe><iframe src="/guia.pdf"></iframe>',
+    );
     expect(found.map((d) => d.kind)).toEqual(['pdf']);
   });
 
@@ -91,11 +93,27 @@ describe('mergeBySize (RN-03 a RN-05)', () => {
   const b = { url: 'https://dos.es/informe.pdf', fileName: 'informe.pdf', kind: 'pdf' } as const;
 
   it('CA-17: mismo nombre y tamaño con dirección distinta → uno solo', () => {
-    expect(mergeBySize([a, b], new Map([[a.url, 100], [b.url, 100]]))).toEqual([a]);
+    expect(
+      mergeBySize(
+        [a, b],
+        new Map([
+          [a.url, 100],
+          [b.url, 100],
+        ]),
+      ),
+    ).toEqual([a]);
   });
 
   it('CA-18: mismo nombre y tamaño distinto → los dos', () => {
-    expect(mergeBySize([a, b], new Map([[a.url, 100], [b.url, 200]]))).toEqual([a, b]);
+    expect(
+      mergeBySize(
+        [a, b],
+        new Map([
+          [a.url, 100],
+          [b.url, 200],
+        ]),
+      ),
+    ).toEqual([a, b]);
   });
 
   it('CA-19: tamaño desconocido → los dos', () => {
@@ -105,6 +123,14 @@ describe('mergeBySize (RN-03 a RN-05)', () => {
 
   it('mismo tamaño y nombre distinto → los dos', () => {
     const c = { ...b, fileName: 'otro.pdf' };
-    expect(mergeBySize([a, c], new Map([[a.url, 100], [c.url, 100]]))).toEqual([a, c]);
+    expect(
+      mergeBySize(
+        [a, c],
+        new Map([
+          [a.url, 100],
+          [c.url, 100],
+        ]),
+      ),
+    ).toEqual([a, c]);
   });
 });

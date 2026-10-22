@@ -74,7 +74,8 @@ export async function addDocuments(
   }
 
   const presentMessage = m.documentAlreadyPresent(notebook.title);
-  for (const document of present) onStatus(document.url, { state: 'present', message: presentMessage });
+  for (const document of present)
+    onStatus(document.url, { state: 'present', message: presentMessage });
 
   let added = 0;
   const reasons: string[] = [];
@@ -107,6 +108,12 @@ export async function addDocuments(
   return {
     ok: true,
     addedAny: added > 0,
-    message: m.documentsPartial(added, documents.length, notebook.title, present.length, reasons.length),
+    message: m.documentsPartial(
+      added,
+      documents.length,
+      notebook.title,
+      present.length,
+      reasons.length,
+    ),
   };
 }

@@ -78,7 +78,9 @@ function parseClient(html: string): InnertubeClient | null {
   const client = dig(extractJson(html, '"INNERTUBE_CONTEXT":'), 'client');
   const clientName = dig(client, 'clientName');
   const clientVersion = dig(client, 'clientVersion');
-  return typeof clientName === 'string' && typeof clientVersion === 'string' ? { clientName, clientVersion } : null;
+  return typeof clientName === 'string' && typeof clientVersion === 'string'
+    ? { clientName, clientVersion }
+    : null;
 }
 
 /** Extrae el objeto JSON que sigue a `marker`, respetando strings y escapes. */
@@ -101,7 +103,10 @@ function extractJson(html: string, marker: string): unknown {
 }
 
 /** Devuelve todos los ids de vídeo de la lista, en orden. */
-export async function listPlaylistVideos(listId: string, fetchFn: typeof fetch = fetch): Promise<string[]> {
+export async function listPlaylistVideos(
+  listId: string,
+  fetchFn: typeof fetch = fetch,
+): Promise<string[]> {
   const response = await fetchFn(`${YOUTUBE_ORIGIN}/playlist?list=${encodeURIComponent(listId)}`, {
     credentials: 'include',
   });

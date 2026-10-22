@@ -25,7 +25,12 @@ const UPLOAD_PATH = '/upload/_/?authuser=0';
 const LOCAL_FILE = 3;
 
 /** Contexto que la web envía junto a las altas y bajas de fuentes. */
-const CLIENT_CONTEXT = [2, null, [1], [1, null, null, null, null, null, null, null, null, null, [1, 3]]];
+const CLIENT_CONTEXT = [
+  2,
+  null,
+  [1],
+  [1, null, null, null, null, null, null, null, null, null, [1, 3]],
+];
 
 /** Estado de una fuente: 2 = lista para usar, 3 = error al importarla. */
 const SOURCE_READY = 2;
@@ -142,7 +147,12 @@ export function parseSources(list: unknown): Source[] {
   });
 }
 
-export function batchExecuteRequest(session: Session, rpcId: string, args: unknown, sourcePath = '/') {
+export function batchExecuteRequest(
+  session: Session,
+  rpcId: string,
+  args: unknown,
+  sourcePath = '/',
+) {
   const query = new URLSearchParams({
     rpcids: rpcId,
     'source-path': sourcePath,
@@ -196,14 +206,34 @@ export function createNotebookLmClient(fetchFn: typeof fetch = fetch) {
 
     /** Añade las URLs en una sola llamada y devuelve las fuentes que NotebookLM ha aceptado. */
     async addUrls(notebookId: string, urls: string[]): Promise<Source[]> {
-      const sources = urls.map((url) => [null, null, null, null, null, null, null, [url], null, null, 1]);
-      const data = await call(RPC.addSources, [sources, notebookId, CLIENT_CONTEXT], notebookPath(notebookId));
+      const sources = urls.map((url) => [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        [url],
+        null,
+        null,
+        1,
+      ]);
+      const data = await call(
+        RPC.addSources,
+        [sources, notebookId, CLIENT_CONTEXT],
+        notebookPath(notebookId),
+      );
       return parseSources((data as unknown[] | null)?.[0]);
     },
 
     async deleteSources(notebookId: string, sourceIds: string[]): Promise<void> {
       if (!sourceIds.length) return;
-      await call(RPC.deleteSources, [sourceIds.map((id) => [id]), CLIENT_CONTEXT], notebookPath(notebookId));
+      await call(
+        RPC.deleteSources,
+        [sourceIds.map((id) => [id]), CLIENT_CONTEXT],
+        notebookPath(notebookId),
+      );
     },
 
     /**
@@ -225,7 +255,12 @@ export function createNotebookLmClient(fetchFn: typeof fetch = fetch) {
      * Segundo paso: sube el contenido con el protocolo reanudable de Google en dos peticiones
      * (`start` y `upload, finalize`). Si falla, la fuente queda registrada sin contenido.
      */
-    async uploadFile(notebookId: string, sourceId: string, fileName: string, content: Blob): Promise<void> {
+    async uploadFile(
+      notebookId: string,
+      sourceId: string,
+      fileName: string,
+      content: Blob,
+    ): Promise<void> {
       const headers = {
         'x-goog-authuser': '0',
         'content-type': 'application/x-www-form-urlencoded;charset=utf-8',
@@ -239,16 +274,25 @@ export function createNotebookLmClient(fetchFn: typeof fetch = fetch) {
           'x-goog-upload-header-content-length': String(content.size),
           'x-goog-upload-protocol': 'resumable',
         },
-        body: JSON.stringify({ PROJECT_ID: notebookId, SOURCE_NAME: fileName, SOURCE_ID: sourceId }),
+        body: JSON.stringify({
+          PROJECT_ID: notebookId,
+          SOURCE_NAME: fileName,
+          SOURCE_ID: sourceId,
+        }),
       });
       const uploadUrl = start.headers.get('x-goog-upload-url');
       if (start.status === 401) throw new NotLoggedInError();
-      if (!start.ok || !uploadUrl) throw new Error(`Gemini Notebook no admite la subida: ${(await start.text()).trim()}`);
+      if (!start.ok || !uploadUrl)
+        throw new Error(`Gemini Notebook no admite la subida: ${(await start.text()).trim()}`);
 
       const upload = await fetchFn(uploadUrl, {
         method: 'POST',
         credentials: 'include',
-        headers: { ...headers, 'x-goog-upload-command': 'upload, finalize', 'x-goog-upload-offset': '0' },
+        headers: {
+          ...headers,
+          'x-goog-upload-command': 'upload, finalize',
+          'x-goog-upload-offset': '0',
+        },
         body: content,
       });
       if (!upload.ok || upload.headers.get('x-goog-upload-status') !== 'final') {
@@ -257,7 +301,11 @@ export function createNotebookLmClient(fetchFn: typeof fetch = fetch) {
     },
 
     async renameSource(notebookId: string, sourceId: string, title: string): Promise<void> {
-      await call(RPC.renameSource, [null, [sourceId], [[[title]]], CLIENT_CONTEXT], notebookPath(notebookId));
+      await call(
+        RPC.renameSource,
+        [null, [sourceId], [[[title]]], CLIENT_CONTEXT],
+        notebookPath(notebookId),
+      );
     },
   };
 }

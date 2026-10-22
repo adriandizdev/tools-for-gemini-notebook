@@ -47,7 +47,18 @@ describe('extractConversation (DOM real de NotebookLM)', () => {
 
   it('elimina citas, botones, comentarios y atributos de Angular', () => {
     const html = assistant!.html;
-    for (const noise of ['citation-marker', 'mat-icon', 'more_horiz', 'Guardar en una nota', 'Copiar respuesta', '_ngcontent', '_nghost', 'jslog', 'data-start-index', '<!--']) {
+    for (const noise of [
+      'citation-marker',
+      'mat-icon',
+      'more_horiz',
+      'Guardar en una nota',
+      'Copiar respuesta',
+      '_ngcontent',
+      '_nghost',
+      'jslog',
+      'data-start-index',
+      '<!--',
+    ]) {
       expect(html).not.toContain(noise);
     }
   });

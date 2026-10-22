@@ -13,11 +13,16 @@ describe('parseVisorPath', () => {
   it('RF-01: la página de la asignatura', () =>
     expect(parseVisorPath('/asignaturas/3128028/mis-temas')).toEqual({ subjectId: '3128028' }));
   it('RF-02: la página de un tema', () =>
-    expect(parseVisorPath('/asignaturas/3128028/mis-temas/3128305/')).toEqual({ subjectId: '3128028', topicId: '3128305' }));
-  it.each(['/', '/asignaturas/3128028', '/asignaturas/3128028/ejercicios-practicos', '/asignaturas/1/mis-temas/2/3'])(
-    'SUP-02: %s no tiene acción',
-    (path) => expect(parseVisorPath(path)).toBeNull(),
-  );
+    expect(parseVisorPath('/asignaturas/3128028/mis-temas/3128305/')).toEqual({
+      subjectId: '3128028',
+      topicId: '3128305',
+    }));
+  it.each([
+    '/',
+    '/asignaturas/3128028',
+    '/asignaturas/3128028/ejercicios-practicos',
+    '/asignaturas/1/mis-temas/2/3',
+  ])('SUP-02: %s no tiene acción', (path) => expect(parseVisorPath(path)).toBeNull());
 });
 
 describe('topicsFromResponse', () => {
@@ -30,7 +35,9 @@ describe('topicsFromResponse', () => {
   });
 
   it('CA-02: solo el tema de la página', () => {
-    expect(topicsFromResponse(topics, '3128305')).toEqual([{ topicId: '3128305', title: 'Tema 3. Patrones creacionales' }]);
+    expect(topicsFromResponse(topics, '3128305')).toEqual([
+      { topicId: '3128305', title: 'Tema 3. Patrones creacionales' },
+    ]);
   });
 
   it.each([null, {}, { topics: 'x' }, { topics: [{ topicId: 1 }, { title: 'Sin id' }] }])(
@@ -43,7 +50,9 @@ describe('topicPdfUrl', () => {
   const url = 'https://cms.unir.net/file/abc/esl-ES';
 
   it('RN-01: la dirección del PDF del tema', () =>
-    expect(topicPdfUrl({ status: 200, body: { filename: 'Tema 1.pdf', downloadUrl: url } })).toBe(url));
+    expect(topicPdfUrl({ status: 200, body: { filename: 'Tema 1.pdf', downloadUrl: url } })).toBe(
+      url,
+    ));
   it('CB-03: sesión del campus caducada', () =>
     expect(() => topicPdfUrl({ status: 401, body: null })).toThrow(CAMPUS_SESSION_EXPIRED));
   it.each([
@@ -56,4 +65,6 @@ describe('topicPdfUrl', () => {
 });
 
 it('topicPageUrl', () =>
-  expect(topicPageUrl('3128028', '101')).toBe('https://visorinteractivo.unir.net/asignaturas/3128028/mis-temas/101'));
+  expect(topicPageUrl('3128028', '101')).toBe(
+    'https://visorinteractivo.unir.net/asignaturas/3128028/mis-temas/101',
+  ));

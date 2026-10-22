@@ -8,7 +8,8 @@ export interface Notebook {
 }
 
 /** Lo que se quiere añadir: el vídeo o la lista de la pestaña activa. */
-export type SourceTarget = { kind: 'video'; videoId: string } | { kind: 'playlist'; listId: string };
+export type SourceTarget =
+  { kind: 'video'; videoId: string } | { kind: 'playlist'; listId: string };
 
 /** Mensaje del popup al background para obtener los cuadernos tal como están ahora (RF-09). */
 export const LIST_NOTEBOOKS = 'list-notebooks';
@@ -21,7 +22,8 @@ export interface AddToNotebookRequest {
   target: SourceTarget;
 }
 
-export type ListNotebooksResponse = { ok: true; notebooks: Notebook[] } | { ok: false; message: string };
+export type ListNotebooksResponse =
+  { ok: true; notebooks: Notebook[] } | { ok: false; message: string };
 
 export interface AddToNotebookResponse {
   ok: boolean;
