@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Proyecto
 
-Extensión de Chrome (Manifest V3), "NotebookLM Tools", escrita en TypeScript con [WXT](https://wxt.dev). Exporta conversaciones de NotebookLM a PDF **conservando las fórmulas** (con `window.print()`, no con librerías de PDF, por fidelidad) y añade como fuentes de un cuaderno vídeos y listas de YouTube (`specs/REQ-001-…`), documentos PDF/Word/PowerPoint de cualquier web (`specs/REQ-002-…`) y temas del visor de UNIR (`specs/REQ-003-…`).
+Extensión de Chrome (Manifest V3), "Tools for Gemini Notebook", escrita en TypeScript con [WXT](https://wxt.dev). Exporta conversaciones de NotebookLM a PDF **conservando las fórmulas** (con `window.print()`, no con librerías de PDF, por fidelidad) y añade como fuentes de un cuaderno vídeos y listas de YouTube (`specs/REQ-001-…`), documentos PDF/Word/PowerPoint de cualquier web (`specs/REQ-002-…`) y temas del visor de UNIR (`specs/REQ-003-…`).
 
 - Arquitectura y flujos: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 - Lo verificado de las APIs internas (RPC de NotebookLM, DOM, YouTube, UNIR): [`docs/PROTOCOLOS.md`](docs/PROTOCOLOS.md). Léelo antes de tocar esos módulos.

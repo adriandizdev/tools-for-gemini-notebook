@@ -3,7 +3,7 @@ import { ALL_WEBS, NOTEBOOKLM_MATCHES, YOUTUBE_MATCHES } from './utils/domains';
 
 export default defineConfig({
   manifest: {
-    name: 'NotebookLM Tools',
+    name: 'Tools for Gemini Notebook',
     description:
       'Amplía Gemini Notebook (NotebookLM): exporta conversaciones a PDF conservando las fórmulas y añade como fuentes vídeos de YouTube, documentos de cualquier web y temas del visor de UNIR.',
     // `activeTab` da la URL de la pestaña al abrir el panel y deja buscar en ella con `scripting`.

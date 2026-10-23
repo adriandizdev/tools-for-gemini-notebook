@@ -13,6 +13,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 - El último cuaderno usado se recuerda por cuenta.
 - Sin sesión, el panel indica que hay que iniciarla en Gemini Notebook (M-19, sustituye a M-08).
 - En incógnito solo cuentan las sesiones iniciadas en incógnito (`incognito: "split"`).
+- La extensión pasa a llamarse **Tools for Gemini Notebook**, tras el cambio de nombre de NotebookLM a Gemini Notebook.
 
 ## [1.0.0] - 2026-10-22
 

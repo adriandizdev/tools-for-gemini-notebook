@@ -1,6 +1,6 @@
 # Política de privacidad
 
-NotebookLM Tools no tiene servidor propio y **no envía datos a terceros**. Todo ocurre en tu navegador, entre tú y los servicios que ya usas.
+Tools for Gemini Notebook no tiene servidor propio y **no envía datos a terceros**. Todo ocurre en tu navegador, entre tú y los servicios que ya usas.
 
 ## Qué datos toca
 

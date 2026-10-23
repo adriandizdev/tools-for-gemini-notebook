@@ -1,16 +1,16 @@
-# NotebookLM Tools
+# Tools for Gemini Notebook
 
-[![CI](https://github.com/OWNER/notebooklm-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/notebooklm-tools/actions/workflows/ci.yml)
+[![CI](https://github.com/adriandizdev/tools-for-gemini-notebook/actions/workflows/ci.yml/badge.svg)](https://github.com/adriandizdev/tools-for-gemini-notebook/actions/workflows/ci.yml)
 ![Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4?logo=googlechrome&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7-3178C6?logo=typescript&logoColor=white)
 [![Licencia: MIT](https://img.shields.io/badge/licencia-MIT-green.svg)](LICENSE)
 
-Extensión de Chrome que amplía **NotebookLM** (ahora _Gemini Notebook_) desde un único panel:
+Extensión de Chrome que amplía **Gemini Notebook** (antes _NotebookLM_) desde un único panel:
 
 - **Exporta conversaciones a PDF conservando las fórmulas** matemáticas.
 - **Añade como fuentes** de un cuaderno vídeos y listas de YouTube, los PDF, Word y PowerPoint de cualquier web y los temas del campus virtual de UNIR, sin salir de la página.
 
-> **English summary:** Chrome extension (Manifest V3, TypeScript, WXT) that extends Google NotebookLM. It exports chats to PDF while keeping LaTeX formulas intact, and adds YouTube videos and playlists, web documents (PDF/DOCX/PPTX) and UNIR course topics as notebook sources. The project, code comments and UI are in Spanish.
+> **English summary:** Chrome extension (Manifest V3, TypeScript, WXT) that extends Gemini Notebook (formerly Google NotebookLM). It exports chats to PDF while keeping LaTeX formulas intact, and adds YouTube videos and playlists, web documents (PDF/DOCX/PPTX) and UNIR course topics as notebook sources. The project, code comments and UI are in Spanish.
 
 <!-- TODO: añadir un GIF por funcionalidad en docs/ -->
 <!-- ![Exportar a PDF](docs/export.gif) -->
