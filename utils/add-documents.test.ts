@@ -7,6 +7,7 @@ import {
   addDocuments,
 } from './add-documents';
 import * as m from './messages';
+import { NotLoggedInError } from './notebooklm-api';
 
 const notebook = { id: 'nb1', title: 'Física' };
 
@@ -161,5 +162,14 @@ describe('añadir una selección', () => {
     const { last } = await run(backend, [doc(1, 'Guía'), doc(2, 'Guía')]);
     expect(added).toHaveLength(1);
     expect(last(doc(2).url)?.state).toBe('present');
+  });
+});
+
+describe('sesión cerrada (REQ-004)', () => {
+  it('CB-08: si Gemini Notebook rechaza un documento por falta de sesión, el error sube (M-19)', async () => {
+    const { backend, added } = fakeBackend();
+    backend.addDocument = () => Promise.reject(new NotLoggedInError());
+    await expect(run(backend, [doc(1), doc(2)])).rejects.toBeInstanceOf(NotLoggedInError);
+    expect(added).toEqual([]);
   });
 });

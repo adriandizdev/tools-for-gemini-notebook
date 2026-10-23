@@ -55,6 +55,15 @@ popup ──mensaje/puerto──▶ background ──▶ reglas puras ──▶ 
 - **Documentos web (REQ-002):** `utils/scan-page.ts` se inyecta en la página, se filtra y deduplica con `utils/documents.ts`, y los tamaños se piden con `HEAD` (6 en paralelo, 3 s como máximo). El progreso llega por un puerto (`ADD_DOCUMENTS_PORT`).
 - **UNIR (REQ-003):** reutiliza REQ-002. La lista y el enlace de descarga de cada tema salen de la API del visor, que se llama desde `utils/unir-page.ts`, inyectada en la pestaña, para que el token no salga de ella.
 
+## Cuentas (REQ-004)
+
+Al abrir el panel en una página de importar, el popup pide `LIST_ACCOUNTS` al background, que sondea `?authuser=0, 1, 2…` (`listAccounts`). `chooseAccount` (`utils/accounts.ts`, puro) elige la cuenta activa con la última usada guardada; el botón de avatar solo aparece con más de una cuenta.
+
+- Cada petición al background (`LIST_NOTEBOOKS`, `ADD_TO_NOTEBOOK`, el puerto de documentos) lleva su `account`, y el background crea el cliente con ella: una importación termina en la cuenta en la que empezó aunque el panel cambie de cuenta o se cierre.
+- Si una respuesta trae `loggedOut`, el popup retira las acciones de añadir y muestra M-19.
+- Con `incognito: "split"`, en incógnito hay otra instancia del background con las cookies de incógnito.
+- Se guarda la última cuenta (`last-account`, o `last-account-incognito` en `storage.session`) y el último cuaderno de cada cuenta (`last-notebooks`).
+
 ## Integración con NotebookLM
 
 NotebookLM no tiene API pública. `utils/notebooklm-api.ts` es el único módulo que conoce sus RPC internos (`batchexecute`):

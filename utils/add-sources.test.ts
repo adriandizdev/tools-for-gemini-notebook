@@ -7,6 +7,7 @@ import {
   addToNotebook,
 } from './add-sources';
 import * as m from './messages';
+import { NotLoggedInError } from './notebooklm-api';
 
 const notebook = { id: 'nb1', title: 'Física' };
 
@@ -188,5 +189,15 @@ describe('añadir una lista', () => {
       m.playlistAdded(2, 'Física'),
     );
     expect(added).toEqual(['a', 'b']);
+  });
+});
+
+describe('sesión cerrada (REQ-004)', () => {
+  it('CB-08: si Gemini Notebook rechaza el vídeo por falta de sesión, el error sube (M-19)', async () => {
+    const { backend } = fakeBackend();
+    backend.addYoutubeVideos = () => Promise.reject(new NotLoggedInError());
+    await expect(addToNotebook(backend, notebook, video('a'))).rejects.toBeInstanceOf(
+      NotLoggedInError,
+    );
   });
 });

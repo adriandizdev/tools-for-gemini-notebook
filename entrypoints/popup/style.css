@@ -85,7 +85,13 @@ body.documents {
 }
 
 header {
-  padding: var(--space-3) var(--space-4);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: 46px;
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-4);
   border-bottom: 1px solid var(--border);
   background: var(--surface);
 }
@@ -298,6 +304,71 @@ body.empty #status::before {
     center / contain no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 3v4a1 1 0 0 0 1 1h4'/%3E%3Cpath d='M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z'/%3E%3Cpath d='M9 14h6'/%3E%3C/svg%3E")
     center / contain no-repeat;
+}
+
+/* Cuentas (REQ-004): botón de avatar y cuadro de cuentas. */
+
+button.icon {
+  width: var(--control-height);
+  padding: 0;
+  border-color: transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--fg-muted);
+}
+
+button.icon svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+}
+
+button.icon[aria-expanded='true'] {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+#account-menu {
+  position: absolute;
+  top: calc(100% - var(--space-1));
+  right: var(--space-3);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+  max-width: calc(100% - 2 * var(--space-3));
+  padding: var(--space-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.12);
+}
+
+#account-menu button {
+  justify-content: flex-start;
+  min-height: var(--control-height);
+  border-color: transparent;
+  font-weight: 500;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+/* La cuenta activa se marca con un check, no solo con color (RF-05). */
+#account-menu button::after {
+  content: '';
+  width: 14px;
+  margin-left: auto;
+  flex: none;
+}
+
+#account-menu button[aria-checked='true'] {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+#account-menu button[aria-checked='true']::after {
+  content: '✓';
 }
 
 /* Documentos (REQ-002, REQ-003) */

@@ -26,7 +26,6 @@ describe('mensajes de REQ-001', () => {
     expect(m.playlistNoneAdded('el vídeo es privado')).toBe(
       'No se ha añadido ningún vídeo de la lista: el vídeo es privado.',
     ));
-  it('M-08', () => expect(m.NOT_LOGGED_IN).toBe('Para añadir fuentes debe iniciar sesión.'));
   it('M-09', () =>
     expect(m.NO_NOTEBOOKS).toBe(
       'No tiene ningún cuaderno. Cree uno en Gemini Notebook antes de añadir fuentes.',
@@ -65,5 +64,17 @@ describe('mensajes de REQ-002', () => {
   it('M-18', () =>
     expect(m.documentsNoneAdded('la web lo deniega')).toBe(
       'No se ha añadido ningún documento: la web lo deniega.',
+    ));
+});
+
+// Textos literales de la tabla 6.1 de REQ-004 (CA-14).
+describe('mensajes de REQ-004', () => {
+  it('M-19', () =>
+    expect(m.NOT_LOGGED_IN).toBe(
+      'Para importar contenido debe iniciar sesión en Gemini Notebook.',
+    ));
+  it('M-20', () =>
+    expect(m.accountUnavailable('ana.trabajo@gmail.com')).toBe(
+      'La cuenta ana.trabajo@gmail.com ya no está disponible. Elija una cuenta para continuar.',
     ));
 });

@@ -1,4 +1,5 @@
 import * as m from './messages';
+import { NotLoggedInError } from './notebooklm-api';
 import type { AddToNotebookResponse, Notebook, SourceTarget } from './sources';
 
 /** Estado del cuaderno destino antes de añadir. `null` = Gemini Notebook no lo permite saber. */
@@ -88,12 +89,16 @@ async function addPlaylist(backend: SourceBackend, notebook: Notebook, listId: s
   };
 }
 
-/** Añade los vídeos; si la llamada entera falla, todos cuentan como rechazados con ese motivo. */
+/**
+ * Añade los vídeos; si la llamada entera falla, todos cuentan como rechazados con ese motivo. Sin
+ * sesión no es un rechazo: el error sube para mostrar M-19 (REQ-004, CB-08).
+ */
 async function addAll(backend: SourceBackend, notebookId: string, videoIds: string[]) {
   if (!videoIds.length) return [];
   try {
     return await backend.addYoutubeVideos(notebookId, videoIds);
   } catch (error) {
+    if (error instanceof NotLoggedInError) throw error;
     const reason = error instanceof Error ? error.message : String(error);
     return videoIds.map((videoId): AddResult => ({ videoId, ok: false, reason }));
   }

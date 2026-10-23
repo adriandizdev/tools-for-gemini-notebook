@@ -1,8 +1,18 @@
+import {
+  LAST_INCOGNITO_ACCOUNT_KEY,
+  LEGACY_LAST_NOTEBOOK_KEY,
+  setLastNotebook,
+} from '@/utils/accounts';
 import { type DocumentToAdd, addDocuments } from '@/utils/add-documents';
 import { addToNotebook } from '@/utils/add-sources';
 import { createDocumentBackend } from '@/utils/document-backend';
 import { NO_NOTEBOOKS, NOT_LOGGED_IN } from '@/utils/messages';
-import { NotLoggedInError, createNotebookLmClient } from '@/utils/notebooklm-api';
+import {
+  type Account,
+  NotLoggedInError,
+  createNotebookLmClient,
+  listAccounts,
+} from '@/utils/notebooklm-api';
 import { createSourceBackend } from '@/utils/source-backend';
 import {
   ADD_DOCUMENTS_PORT,
@@ -11,8 +21,10 @@ import {
   type AddDocumentsRequest,
   type AddToNotebookRequest,
   type AddToNotebookResponse,
-  LAST_NOTEBOOK_KEY,
+  LIST_ACCOUNTS,
   LIST_NOTEBOOKS,
+  type ListAccountsResponse,
+  type ListNotebooksRequest,
   type ListNotebooksResponse,
 } from '@/utils/sources';
 import { TOPIC_NOT_DELIVERED, VISOR_TAB_CLOSED, topicPdfPath, topicPdfUrl } from '@/utils/unir';
@@ -20,13 +32,36 @@ import { type VisorApiResult, callVisorApi } from '@/utils/unir-page';
 import { listPlaylistVideos } from '@/utils/youtube-playlist';
 
 // Las llamadas a NotebookLM y YouTube se hacen aquí (con las host permissions y las cookies
-// del usuario) y no en el popup, que se cierra en cuanto pierde el foco.
+// del usuario) y no en el popup, que se cierra en cuanto pierde el foco. Con `incognito: 'split'`,
+// en incógnito corre otra instancia con las cookies de incógnito (REQ-004, RN-01).
 export default defineBackground(() => {
-  // `listNotebooks` y `add` no rechazan nunca: convierten cualquier error en una respuesta.
+  // Antes de REQ-004 se recordaba un solo cuaderno para todas las cuentas.
+  browser.runtime.onInstalled.addListener(() => {
+    void browser.storage.local.remove(LEGACY_LAST_NOTEBOOK_KEY).catch(() => {});
+  });
+
+  // SUP-03: la última cuenta de incógnito se olvida al cerrar todas las ventanas de incógnito.
+  if (browser.extension.inIncognitoContext) {
+    browser.windows.onRemoved.addListener(() => {
+      void browser.windows
+        .getAll()
+        .then((windows) => {
+          if (!windows.some((window) => window.incognito))
+            return browser.storage.session.remove(LAST_INCOGNITO_ACCOUNT_KEY);
+        })
+        .catch(() => {});
+    });
+  }
+
+  // `accounts`, `listNotebooks` y `add` no rechazan nunca: convierten cualquier error en una respuesta.
   browser.runtime.onMessage.addListener(
     (message: { type?: unknown } | undefined, _sender, sendResponse) => {
+      if (message?.type === LIST_ACCOUNTS) {
+        void accounts().then(sendResponse);
+        return true;
+      }
       if (message?.type === LIST_NOTEBOOKS) {
-        void listNotebooks().then(sendResponse);
+        void listNotebooks(message as ListNotebooksRequest).then(sendResponse);
         return true;
       }
       if (message?.type === ADD_TO_NOTEBOOK) {
@@ -52,23 +87,25 @@ export default defineBackground(() => {
   });
 });
 
+/** Cada petición lleva su cuenta: se trabaja con ella aunque el popup cambie de cuenta (REQ-004, RN-05). */
+const client = (account: Account) => createNotebookLmClient(fetch, account);
+
 /** No rechaza nunca: cualquier error acaba en el evento `done`. */
 async function addDocumentsFromPopup(
-  { notebook, documents }: AddDocumentsRequest,
+  { account, notebook, documents }: AddDocumentsRequest,
   post: (event: AddDocumentsEvent) => void,
 ) {
   let response: AddToNotebookResponse;
   try {
-    const backend = createDocumentBackend(createNotebookLmClient(), fetch, resolveDocumentUrl);
+    const backend = createDocumentBackend(client(account), fetch, resolveDocumentUrl);
     response = await addDocuments(backend, notebook, documents, (url, status) =>
       post({ type: 'status', url, status }),
     );
   } catch (error) {
-    response = { ok: false, addedAny: false, message: errorMessage(error) };
+    response = { ok: false, addedAny: false, ...failure(error) };
   }
-  // Se recuerda aquí y no en el popup, que puede haberse cerrado (RN-10, RN-16).
-  if (response.addedAny)
-    await browser.storage.local.set({ [LAST_NOTEBOOK_KEY]: notebook.id }).catch(() => {});
+  // Se recuerda aquí y no en el popup, que puede haberse cerrado (RN-10, RN-16; REQ-004, RN-02).
+  if (response.addedAny) await setLastNotebook(account.email, notebook.id).catch(() => {});
   post({ type: 'done', response });
 }
 
@@ -91,28 +128,39 @@ async function resolveDocumentUrl(document: DocumentToAdd): Promise<string> {
   return topicPdfUrl(result);
 }
 
-async function listNotebooks(): Promise<ListNotebooksResponse> {
+async function accounts(): Promise<ListAccountsResponse> {
   try {
-    const notebooks = await createNotebookLmClient().listNotebooks();
+    return { ok: true, accounts: await listAccounts() };
+  } catch (error) {
+    return { ok: false, ...failure(error) };
+  }
+}
+
+async function listNotebooks({ account }: ListNotebooksRequest): Promise<ListNotebooksResponse> {
+  try {
+    const notebooks = await client(account).listNotebooks();
     if (!notebooks.length) return { ok: false, message: NO_NOTEBOOKS };
     return { ok: true, notebooks: notebooks.map(({ id, title }) => ({ id, title })) };
   } catch (error) {
-    return { ok: false, message: errorMessage(error) };
+    return { ok: false, ...failure(error) };
   }
 }
 
-async function add({ notebook, target }: AddToNotebookRequest): Promise<AddToNotebookResponse> {
+async function add({
+  account,
+  notebook,
+  target,
+}: AddToNotebookRequest): Promise<AddToNotebookResponse> {
   try {
-    const backend = createSourceBackend(createNotebookLmClient(), (listId) =>
-      listPlaylistVideos(listId),
-    );
+    const backend = createSourceBackend(client(account), (listId) => listPlaylistVideos(listId));
     return await addToNotebook(backend, notebook, target);
   } catch (error) {
-    return { ok: false, addedAny: false, message: errorMessage(error) };
+    return { ok: false, addedAny: false, ...failure(error) };
   }
 }
 
-function errorMessage(error: unknown): string {
-  if (error instanceof NotLoggedInError) return NOT_LOGGED_IN;
-  return error instanceof Error ? error.message : String(error);
+/** Sin sesión, M-19 y `loggedOut` para que el popup retire las acciones (REQ-004, RF-14, CB-08). */
+function failure(error: unknown): { message: string; loggedOut?: boolean } {
+  if (error instanceof NotLoggedInError) return { message: NOT_LOGGED_IN, loggedOut: true };
+  return { message: error instanceof Error ? error.message : String(error) };
 }

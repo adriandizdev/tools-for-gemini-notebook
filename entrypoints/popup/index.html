@@ -8,6 +8,22 @@
   <body>
     <header>
       <h1>NotebookLM Tools</h1>
+      <button
+        id="account-button"
+        class="icon"
+        type="button"
+        aria-label="Elegir cuenta"
+        aria-haspopup="menu"
+        aria-controls="account-menu"
+        aria-expanded="false"
+        hidden
+      >
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <circle cx="12" cy="8" r="4" />
+          <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" />
+        </svg>
+      </button>
+      <div id="account-menu" role="menu" aria-label="Cuentas" hidden></div>
     </header>
 
     <main>

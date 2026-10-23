@@ -4,6 +4,7 @@ import {
   RpcError,
   batchExecuteRequest,
   createNotebookLmClient,
+  listAccounts,
   parseBatchExecute,
   parseNotebooks,
   parseSession,
@@ -16,6 +17,7 @@ import deleteSources from './__fixtures__/notebooklm-rpc/delete-sources.txt?raw'
 import listNotebooks from './__fixtures__/notebooklm-rpc/list-notebooks.txt?raw';
 import listNotebooksEmpty from './__fixtures__/notebooklm-rpc/list-notebooks-empty.txt?raw';
 import renameSource from './__fixtures__/notebooklm-rpc/rename-source.txt?raw';
+import homeFixture from './__fixtures__/notebooklm-home.html?raw';
 
 const fixtures: Record<string, string> = {
   'add-file.txt': addFile,
@@ -29,12 +31,32 @@ const fixtures: Record<string, string> = {
 const fixture = (name: string) => fixtures[name]!;
 
 const PRUEBA = '7cb102e6-4599-4f92-b6d7-86df5ac7e408';
-const session = { at: 'AT_TOKEN', fsid: '123', bl: 'boq_labs-tailwind-frontend_20261011.03_p0' };
-const homeHtml = `<script>window.WIZ_global_data = {"FdrFJe":"123","SNlM0e":"AT_TOKEN","cfb2h":"${session.bl}"};</script>`;
+const session = {
+  at: 'AT_TOKEN',
+  fsid: '123',
+  bl: 'boq_labs-tailwind-frontend_20261011.03_p0',
+  email: 'ana@gmail.com',
+  index: 0,
+};
+/** Página de inicio de la cuenta `index` (la forma real está en `__fixtures__/notebooklm-home.html`). */
+const home = (email: string, index: number) =>
+  `<script>window.WIZ_global_data = {"FdrFJe":"123","QrtxK":"${index}","SNlM0e":"AT_TOKEN","cfb2h":"${session.bl}","oPEP7c":"${email}"};</script>`;
+const homeHtml = home(session.email, 0);
+const HOME = 'https://notebook.google.com/?authuser=0';
 
 describe('parseSession', () => {
-  it('lee los tokens de la página de inicio', () => {
+  it('lee los tokens y la cuenta de la página de inicio', () => {
     expect(parseSession(homeHtml)).toEqual(session);
+  });
+
+  it('lee la sesión de la página real', () => {
+    expect(parseSession(homeFixture)).toEqual({
+      at: 'AT_TOKEN',
+      fsid: '-1234567890123456789',
+      bl: 'boq_labs-tailwind-frontend_20261021.16_p0',
+      email: 'ana@gmail.com',
+      index: 0,
+    });
   });
 
   it('devuelve null sin sesión (la página no trae SNlM0e)', () => {
@@ -116,10 +138,11 @@ describe('parseBatchExecute', () => {
 describe('batchExecuteRequest', () => {
   it('envía el RPC y el token como formulario', () => {
     const args = [['x'], PRUEBA];
-    const { url, init } = batchExecuteRequest(session, 'izAoDd', args, `/notebook/${PRUEBA}`);
+    const { url, init } = batchExecuteRequest(session, 1, 'izAoDd', args, `/notebook/${PRUEBA}`);
     const parsed = new URL(url);
     expect(parsed.pathname).toBe('/_/LabsTailwindUi/data/batchexecute');
     expect(parsed.searchParams.get('rpcids')).toBe('izAoDd');
+    expect(parsed.searchParams.get('authuser')).toBe('1');
     expect(parsed.searchParams.get('source-path')).toBe(`/notebook/${PRUEBA}`);
     const body = new URLSearchParams(init.body);
     expect(body.get('at')).toBe('AT_TOKEN');
@@ -145,7 +168,64 @@ describe('createNotebookLmClient', () => {
     });
     expect(await client.listNotebooks()).toHaveLength(2);
     expect(await client.listNotebooks()).toHaveLength(2);
-    expect(calls.filter((url) => url === 'https://notebook.google.com/')).toHaveLength(1);
+    expect(calls.filter((url) => url === HOME)).toHaveLength(1);
+  });
+
+  it('REQ-004 (RF-08): trabaja con el índice de la cuenta indicada', async () => {
+    const calls: string[] = [];
+    const account = { email: 'ana.trabajo@gmail.com', authuser: 1 };
+    const client = createNotebookLmClient((input) => {
+      calls.push(input instanceof Request ? input.url : String(input));
+      return respond(calls.length === 1 ? home(account.email, 1) : fixture('list-notebooks.txt'));
+    }, account);
+    await client.listNotebooks();
+    expect(calls[0]).toBe('https://notebook.google.com/?authuser=1');
+    expect(new URL(calls[1]!).searchParams.get('authuser')).toBe('1');
+  });
+
+  it('REQ-004 (RN-05): si el índice ya es de otra cuenta, lanza NotLoggedInError', async () => {
+    const client = createNotebookLmClient(() => respond(home('otra@gmail.com', 1)), {
+      email: 'ana.trabajo@gmail.com',
+      authuser: 1,
+    });
+    await expect(client.listNotebooks()).rejects.toBeInstanceOf(NotLoggedInError);
+  });
+});
+
+describe('listAccounts (REQ-004)', () => {
+  const respond = (body: string) => Promise.resolve(new Response(body));
+  const urlOf = (input: RequestInfo | URL) =>
+    input instanceof Request ? input.url : String(input);
+  /** Simula Google: un índice fuera de rango devuelve la cuenta 0. */
+  const google = (emails: string[], { withIndex = true } = {}) => {
+    const calls: number[] = [];
+    const fetchFn = ((input: RequestInfo | URL) => {
+      const n = Number(new URL(urlOf(input)).searchParams.get('authuser'));
+      calls.push(n);
+      if (!emails.length) return respond('<html>sin sesión</html>');
+      const index = n < emails.length ? n : 0;
+      const html = home(emails[index]!, index);
+      return respond(withIndex ? html : html.replace(/"QrtxK":"\d+",/, ''));
+    }) as typeof fetch;
+    return { fetchFn, calls };
+  };
+
+  it('CB-01: sin sesión no hay cuentas', async () => {
+    expect(await listAccounts(google([]).fetchFn)).toEqual([]);
+  });
+
+  it('lista las cuentas en orden y para cuando Google vuelve a la cuenta 0', async () => {
+    const { fetchFn, calls } = google(['ana@gmail.com', 'ana.trabajo@gmail.com']);
+    expect(await listAccounts(fetchFn)).toEqual([
+      { email: 'ana@gmail.com', authuser: 0 },
+      { email: 'ana.trabajo@gmail.com', authuser: 1 },
+    ]);
+    expect(calls).toEqual([0, 1, 2]);
+  });
+
+  it('sin índice en la página, para cuando se repite el correo', async () => {
+    const { fetchFn } = google(['ana@gmail.com'], { withIndex: false });
+    expect(await listAccounts(fetchFn)).toEqual([{ email: 'ana@gmail.com', authuser: 0 }]);
   });
 });
 
@@ -170,9 +250,7 @@ describe('subida de ficheros (REQ-002)', () => {
         headers: (init?.headers ?? {}) as Record<string, string>,
         body: init?.body,
       });
-      return Promise.resolve(
-        url === 'https://notebook.google.com/' ? new Response(homeHtml) : routes(url),
-      );
+      return Promise.resolve(url === HOME ? new Response(homeHtml) : routes(url));
     }) as typeof fetch;
     return { client: createNotebookLmClient(fetchFn), calls };
   }

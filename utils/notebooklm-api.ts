@@ -20,7 +20,9 @@ const RPC = {
   renameSource: 'b7Wfje',
 } as const;
 
-const UPLOAD_PATH = '/upload/_/?authuser=0';
+const UPLOAD_PATH = '/upload/_/';
+/** Tope de cuentas que se sondean con `authuser` (REQ-004). */
+const MAX_ACCOUNTS = 10;
 /** Tipo que la web envía al registrar cualquier fichero local (PDF, Word o PowerPoint). */
 const LOCAL_FILE = 3;
 
@@ -42,6 +44,17 @@ export interface Session {
   fsid: string;
   /** Versión del frontend (`cfb2h`). */
   bl: string;
+  /** Correo de la cuenta (`oPEP7c`). */
+  email: string;
+  /** Índice de la sesión (`QrtxK`, el `authuser` real); `null` si no viene. */
+  index: number | null;
+}
+
+/** Cuenta de Google con la sesión iniciada en Gemini Notebook (REQ-004). */
+export interface Account {
+  email: string;
+  /** Índice `authuser` de la cuenta en este navegador; cambia si se añaden o quitan cuentas. */
+  authuser: number;
 }
 
 export interface Source {
@@ -76,13 +89,43 @@ export class RpcError extends Error {
   }
 }
 
-/** Lee los tokens de la página de inicio. Sin sesión, la página no incluye `SNlM0e`. */
+/** Lee los tokens y la cuenta de la página de inicio. Sin sesión, la página no incluye `SNlM0e`. */
 export function parseSession(html: string): Session | null {
   const read = (key: string) => new RegExp(`"${key}":"([^"]+)"`).exec(html)?.[1];
   const at = read('SNlM0e');
   const fsid = read('FdrFJe');
   const bl = read('cfb2h');
-  return at && fsid && bl ? { at, fsid, bl } : null;
+  const email = read('oPEP7c');
+  const index = Number.parseInt(read('QrtxK') ?? '', 10);
+  return at && fsid && bl && email
+    ? { at, fsid, bl, email, index: Number.isNaN(index) ? null : index }
+    : null;
+}
+
+const homeUrl = (authuser: number) => `${NOTEBOOKLM_ORIGIN}/?authuser=${authuser}`;
+
+async function fetchSession(fetchFn: typeof fetch, authuser: number): Promise<Session | null> {
+  const response = await fetchFn(homeUrl(authuser), { credentials: 'include' });
+  if (!response.ok) throw new Error(`Gemini Notebook no responde (HTTP ${response.status})`);
+  return parseSession(await response.text());
+}
+
+/**
+ * Cuentas con la sesión iniciada en Gemini Notebook, en el orden de Google (la primera es la
+ * principal). Se sondea `?authuser=0, 1, 2…`: con un índice fuera de rango, Google devuelve la
+ * cuenta 0, así que se para en cuanto el índice (`QrtxK`) no es el pedido o el correo se repite.
+ * Las cookies son las del contexto que llama: en incógnito, las de incógnito (REQ-004, RN-01).
+ */
+export async function listAccounts(fetchFn: typeof fetch = fetch): Promise<Account[]> {
+  const accounts: Account[] = [];
+  for (let authuser = 0; authuser < MAX_ACCOUNTS; authuser++) {
+    const session = await fetchSession(fetchFn, authuser);
+    if (!session) break;
+    if (session.index !== null && session.index !== authuser) break;
+    if (accounts.some((account) => account.email === session.email)) break;
+    accounts.push({ email: session.email, authuser });
+  }
+  return accounts;
 }
 
 /**
@@ -149,12 +192,14 @@ export function parseSources(list: unknown): Source[] {
 
 export function batchExecuteRequest(
   session: Session,
+  authuser: number,
   rpcId: string,
   args: unknown,
   sourcePath = '/',
 ) {
   const query = new URLSearchParams({
     rpcids: rpcId,
+    authuser: String(authuser),
     'source-path': sourcePath,
     bl: session.bl,
     'f.sid': session.fsid,
@@ -176,21 +221,30 @@ export function batchExecuteRequest(
   };
 }
 
-/** Cliente con las cookies del usuario. `fetchFn` se inyecta para poder probarlo. */
-export function createNotebookLmClient(fetchFn: typeof fetch = fetch) {
+/**
+ * Cliente con las cookies del usuario. `fetchFn` se inyecta para poder probarlo. Con `account`,
+ * todo se hace con esa cuenta; si su índice ya corresponde a otra (o a ninguna), lanza
+ * `NotLoggedInError` en vez de usar otra cuenta (REQ-004, RF-08, RN-05).
+ */
+export function createNotebookLmClient(fetchFn: typeof fetch = fetch, account?: Account) {
+  const authuser = account?.authuser ?? 0;
   let session: Session | undefined;
 
   async function getSession(): Promise<Session> {
     if (session) return session;
-    const response = await fetchFn(`${NOTEBOOKLM_ORIGIN}/`, { credentials: 'include' });
-    if (!response.ok) throw new Error(`Gemini Notebook no responde (HTTP ${response.status})`);
-    const parsed = parseSession(await response.text());
-    if (!parsed) throw new NotLoggedInError();
+    const parsed = await fetchSession(fetchFn, authuser);
+    if (!parsed || (account && parsed.email !== account.email)) throw new NotLoggedInError();
     return (session = parsed);
   }
 
   async function call(rpcId: string, args: unknown, sourcePath?: string): Promise<unknown> {
-    const { url, init } = batchExecuteRequest(await getSession(), rpcId, args, sourcePath);
+    const { url, init } = batchExecuteRequest(
+      await getSession(),
+      authuser,
+      rpcId,
+      args,
+      sourcePath,
+    );
     const response = await fetchFn(url, init);
     if (response.status === 401) throw new NotLoggedInError();
     if (!response.ok) throw new Error(`Gemini Notebook no responde (HTTP ${response.status})`);
@@ -262,10 +316,10 @@ export function createNotebookLmClient(fetchFn: typeof fetch = fetch) {
       content: Blob,
     ): Promise<void> {
       const headers = {
-        'x-goog-authuser': '0',
+        'x-goog-authuser': String(authuser),
         'content-type': 'application/x-www-form-urlencoded;charset=utf-8',
       };
-      const start = await fetchFn(`${NOTEBOOKLM_ORIGIN}${UPLOAD_PATH}`, {
+      const start = await fetchFn(`${NOTEBOOKLM_ORIGIN}${UPLOAD_PATH}?authuser=${authuser}`, {
         method: 'POST',
         credentials: 'include',
         headers: {

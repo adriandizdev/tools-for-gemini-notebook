@@ -1,6 +1,7 @@
 import { NOTEBOOK_FULL } from './add-sources';
 import type { DocumentKind } from './documents';
 import * as m from './messages';
+import { NotLoggedInError } from './notebooklm-api';
 import type { AddToNotebookResponse, Notebook } from './sources';
 
 /** Estado del cuaderno destino antes de añadir. */
@@ -87,6 +88,8 @@ export async function addDocuments(
       added++;
       onStatus(document.url, { state: 'added' });
     } catch (error) {
+      // Sin sesión no se sigue con el resto: se muestra M-19 (REQ-004, CB-08).
+      if (error instanceof NotLoggedInError) throw error;
       const reason = error instanceof Error ? error.message : String(error);
       reasons.push(reason);
       onStatus(document.url, { state: 'failed', message: m.documentRejected(reason) });

@@ -18,6 +18,7 @@ import {
   type AddDocumentsRequest,
   type Notebook,
 } from '@/utils/sources';
+import type { AccountSession } from './accounts';
 import type { StatusKind } from './main';
 import { loadNotebooks } from './notebooks';
 
@@ -50,11 +51,13 @@ type DocumentsPage =
 
 /**
  * Acción "añadir documentos de la página" en cualquier web salvo NotebookLM y YouTube (REQ-002).
- * En el visor de UNIR, el listado son los temas de la asignatura (REQ-003).
+ * En el visor de UNIR, el listado son los temas de la asignatura (REQ-003). Los cuadernos son los
+ * de la cuenta activa (REQ-004).
  */
 export function setupDocuments(
   tabId: number,
   page: DocumentsPage,
+  accounts: AccountSession,
   showStatus: (message: string, kind?: StatusKind) => void,
 ) {
   const grant = document.querySelector<HTMLButtonElement>('#grant')!;
@@ -74,6 +77,7 @@ export function setupDocuments(
 
   function setBusy(value: boolean, button?: HTMLButtonElement) {
     busy = value;
+    accounts.setBusy(value);
     if (trigger) trigger.ariaBusy = null;
     trigger = value ? button : undefined;
     if (trigger) trigger.ariaBusy = 'true';
@@ -134,8 +138,9 @@ export function setupDocuments(
 
   /** Abre el puerto con el background y va actualizando el estado de cada fila (RF-16). */
   function addDocuments(toAdd: Row[], button: HTMLButtonElement) {
+    const account = accounts.current;
     const notebook = notebooks.find((n) => n.id === select.value);
-    if (!notebook || !toAdd.length) return;
+    if (!account || !notebook || !toAdd.length) return;
     setBusy(true, button);
     showStatus('');
     for (const row of toAdd) setState(row, null);
@@ -150,11 +155,14 @@ export function setupDocuments(
       showStatus(event.response.message, event.response.ok ? 'success' : 'error');
       setBusy(false);
       port.disconnect();
+      // REQ-004, CB-08: la sesión se cerró sin que el panel lo supiera.
+      if (event.response.loggedOut) accounts.signedOut();
     });
     port.onDisconnect.addListener(() => {
       if (busy) setBusy(false);
     });
     const request: AddDocumentsRequest = {
+      account,
       notebook,
       documents: toAdd.map(({ candidate, proposed, name }) => ({
         url: candidate.url,
@@ -256,9 +264,14 @@ export function setupDocuments(
   async function run() {
     grant.hidden = true;
     panel.hidden = false;
-    void loadNotebooks(select, showStatus).then((loaded) => {
-      notebooks = loaded;
+    accounts.watch((account) => {
+      notebooks = [];
       updateButtons();
+      void loadNotebooks(select, accounts, account, showStatus).then((loaded) => {
+        if (!loaded) return;
+        notebooks = loaded;
+        updateButtons();
+      });
     });
     await scan();
   }

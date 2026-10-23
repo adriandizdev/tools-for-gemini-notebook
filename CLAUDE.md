@@ -35,6 +35,7 @@ El linter es oxlint con `oxlint-tsgolint` y no ESLint: `typescript-eslint` no ad
 - **Las reglas de negocio son puras** (`utils/add-sources.ts`, `utils/add-documents.ts`) y reciben el acceso a NotebookLM y YouTube como backend inyectado. Las llamadas se hacen desde el background, que sigue vivo aunque el popup se cierre.
 - **Funciones inyectadas autocontenidas:** `scanPage` (`utils/scan-page.ts`) y `callVisorApi` (`utils/unir-page.ts`) se serializan con `scripting.executeScript`; no pueden tener imports.
 - **El token del campus de UNIR nunca sale de la pestaña del visor** (SUP-07): su API solo se llama desde `callVisorApi`.
+- **Cuentas (REQ-004):** cada petición al background lleva la cuenta (`Account`: correo y `authuser`) y el cliente comprueba que la sesión es de esa cuenta. El manifest usa `incognito: "split"` para que en incógnito solo cuenten las sesiones de incógnito.
 - **Subidas a NotebookLM:** solo `.pdf`, `.docx` y `.pptx`, y el nombre debe acabar en la extensión (después se renombra para quitarla).
 - **Las fórmulas viajan como LaTeX, no como HTML de KaTeX:** se vuelven a renderizar con el KaTeX empaquetado. Evita desajustes de versión, recupera MathML y reduce el tamaño (~400 KB por respuesta frente al límite de ~10 MB de `storage.session`).
 - **El saneado con DOMPurify es obligatorio** en la página de impresión, que tiene acceso a las APIs de la extensión y recibe HTML externo. Debe seguir permitiendo MathML, SVG, `img` con `data:` y `style`/`class`/`data-*`.

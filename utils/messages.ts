@@ -20,14 +20,12 @@ export const videoRejected = (reason: string) =>
 export const playlistNoneAdded = (reason: string) =>
   `No se ha añadido ningún vídeo de la lista: ${clean(reason)}.`; // M-07
 
-export const NOT_LOGGED_IN = 'Para añadir fuentes debe iniciar sesión.'; // M-08
-
 export const NO_NOTEBOOKS =
   'No tiene ningún cuaderno. Cree uno en Gemini Notebook antes de añadir fuentes.'; // M-09
 
 export const NO_ACTIONS = 'No hay acciones disponibles en esta página.'; // M-10
 
-// Mensajes de REQ-002 (tabla 6.1 de su spec). M-08, M-09 y M-10 se comparten con REQ-001.
+// Mensajes de REQ-002 (tabla 6.1 de su spec). M-09 y M-10 se comparten con REQ-001.
 
 export const SCANNING = 'Buscando documentos en la página…'; // M-11
 
@@ -56,6 +54,13 @@ export const documentRejected = (reason: string) =>
 
 export const documentsNoneAdded = (reason: string) =>
   `No se ha añadido ningún documento: ${clean(reason)}.`; // M-18
+
+// Mensajes de REQ-004 (tabla 6.1 de su spec). M-19 sustituye a M-08 en REQ-001, REQ-002 y REQ-003.
+
+export const NOT_LOGGED_IN = 'Para importar contenido debe iniciar sesión en Gemini Notebook.'; // M-19
+
+export const accountUnavailable = (email: string) =>
+  `La cuenta ${email} ya no está disponible. Elija una cuenta para continuar.`; // M-20
 
 /** El motivo va seguido de un punto en la tabla: se quita el suyo para no duplicarlo. */
 const clean = (reason: string) => reason.trim().replace(/\.+$/, '');

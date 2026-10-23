@@ -2,6 +2,18 @@
 
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y el proyecto usa [versionado semántico](https://semver.org/lang/es/).
 
+## [Sin publicar]
+
+### Añadido
+
+- Elegir la cuenta de Google con la que se importa: botón de avatar y cuadro de cuentas cuando hay varias con la sesión iniciada (REQ-004).
+
+### Cambiado
+
+- El último cuaderno usado se recuerda por cuenta.
+- Sin sesión, el panel indica que hay que iniciarla en Gemini Notebook (M-19, sustituye a M-08).
+- En incógnito solo cuentan las sesiones iniciadas en incógnito (`incognito: "split"`).
+
 ## [1.0.0] - 2026-10-22
 
 ### Añadido

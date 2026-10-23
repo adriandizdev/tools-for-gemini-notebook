@@ -14,5 +14,8 @@ export default defineConfig({
     // Para ver el tamaño de los documentos y descargarlos de cualquier web (REQ-002). Se pide
     // desde el panel la primera vez, no al instalar (RF-21).
     optional_host_permissions: ALL_WEBS,
+    // En incógnito, el background corre aparte y llama a Gemini Notebook con las cookies de
+    // incógnito: solo cuentan las sesiones iniciadas allí (REQ-004, RN-01, CB-02).
+    incognito: 'split',
   },
 });
