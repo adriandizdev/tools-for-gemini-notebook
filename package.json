@@ -31,6 +31,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@fontsource-variable/plus-jakarta-sans": "^5.3.0",
     "dompurify": "^3.4.16",
     "katex": "^0.19.0"
   },

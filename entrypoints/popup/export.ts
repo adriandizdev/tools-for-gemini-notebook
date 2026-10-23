@@ -32,6 +32,7 @@ export function setupExport(tabId: number, showError: (message: string) => void)
 
   async function onExport() {
     button.disabled = true;
+    button.ariaBusy = 'true';
     showError('');
     try {
       await exportTab(tabId, currentOptions());
@@ -39,6 +40,7 @@ export function setupExport(tabId: number, showError: (message: string) => void)
       showError(errorText(error));
     } finally {
       button.disabled = false;
+      button.ariaBusy = null;
     }
   }
 

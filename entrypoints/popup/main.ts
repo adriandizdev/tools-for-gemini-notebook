@@ -34,6 +34,7 @@ browser.tabs
       document.querySelector<HTMLElement>('#documents-section')!.hidden = false;
       setupDocuments(tab.id, page, showStatus);
     } else {
+      document.body.classList.add('empty');
       showStatus(NO_ACTIONS, 'info');
     }
   })

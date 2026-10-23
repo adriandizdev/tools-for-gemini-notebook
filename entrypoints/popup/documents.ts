@@ -69,8 +69,18 @@ export function setupDocuments(
   const rows = new Map<string, Row>();
   let notebooks: Notebook[] = [];
   let busy = false;
+  /** Botón que lanzó la operación en curso; muestra el spinner. */
+  let trigger: HTMLButtonElement | undefined;
 
   const errorText = (error: unknown) => (error instanceof Error ? error.message : String(error));
+
+  function setBusy(value: boolean, button?: HTMLButtonElement) {
+    busy = value;
+    if (trigger) trigger.ariaBusy = null;
+    trigger = value ? button : undefined;
+    if (trigger) trigger.ariaBusy = 'true';
+    updateButtons();
+  }
 
   function updateButtons() {
     const ready = !busy && Boolean(select.value);
@@ -106,11 +116,12 @@ export function setupDocuments(
     name.placeholder = proposed;
     name.title = candidate.url;
     const add = document.createElement('button');
+    add.className = 'ghost';
     add.textContent = 'Añadir';
     const state = document.createElement('p');
     state.className = 'document-state';
     const meta = document.createElement('p');
-    meta.className = 'document-state';
+    meta.className = 'document-meta';
     meta.textContent =
       candidate.unirTopicId === undefined
         ? `${KIND_LABEL[candidate.kind]} · ${candidate.fileName}`
@@ -119,16 +130,15 @@ export function setupDocuments(
 
     const row: Row = { candidate, proposed, item, checkbox, name, add, state };
     checkbox.addEventListener('change', updateButtons);
-    add.addEventListener('click', () => addDocuments([row]));
+    add.addEventListener('click', () => addDocuments([row], add));
     return row;
   }
 
   /** Abre el puerto con el background y va actualizando el estado de cada fila (RF-16). */
-  function addDocuments(toAdd: Row[]) {
+  function addDocuments(toAdd: Row[], button: HTMLButtonElement) {
     const notebook = notebooks.find((n) => n.id === select.value);
     if (!notebook || !toAdd.length) return;
-    busy = true;
-    updateButtons();
+    setBusy(true, button);
     showStatus('');
     for (const row of toAdd) setState(row, null);
 
@@ -140,14 +150,11 @@ export function setupDocuments(
         return;
       }
       showStatus(event.response.message, event.response.ok ? 'success' : 'error');
-      busy = false;
-      updateButtons();
+      setBusy(false);
       port.disconnect();
     });
     port.onDisconnect.addListener(() => {
-      if (!busy) return;
-      busy = false;
-      updateButtons();
+      if (busy) setBusy(false);
     });
     const request: AddDocumentsRequest = {
       notebook,
@@ -243,6 +250,7 @@ export function setupDocuments(
   async function scan() {
     scanStatus.textContent = SCANNING;
     scanStatus.hidden = false;
+    panel.ariaBusy = 'true';
     const candidates = await findDocuments();
     // RF-05, RNF-01: se muestran ya, sin esperar a los tamaños.
     for (const candidate of candidates) {
@@ -254,7 +262,12 @@ export function setupDocuments(
     // Los temas de UNIR no tienen dirección de descarga hasta que se piden (REQ-003).
     if (page.kind !== 'unir') await checkSizes(candidates);
     scanStatus.hidden = true;
-    if (!rows.size) showStatus(NO_ACTIONS, 'info'); // CB-08
+    panel.ariaBusy = null;
+    if (rows.size) return;
+    // CB-08
+    addSelected.hidden = true;
+    document.body.classList.add('empty');
+    showStatus(NO_ACTIONS, 'info');
   }
 
   async function run() {
@@ -277,7 +290,10 @@ export function setupDocuments(
 
   select.addEventListener('change', updateButtons);
   addSelected.addEventListener('click', () =>
-    addDocuments([...rows.values()].filter((row) => row.checkbox.checked)),
+    addDocuments(
+      [...rows.values()].filter((row) => row.checkbox.checked),
+      addSelected,
+    ),
   );
   grant.addEventListener('click', () => void requestPermission());
 

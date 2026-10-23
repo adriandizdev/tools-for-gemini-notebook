@@ -25,6 +25,7 @@ export function setupAdd(
 
   async function loadNotebooks() {
     addButton.disabled = true;
+    addButton.ariaBusy = 'true';
     form.hidden = true;
     showStatus('Cargando cuadernos…', 'info');
     try {
@@ -43,6 +44,7 @@ export function setupAdd(
       showStatus(error instanceof Error ? error.message : String(error));
     } finally {
       addButton.disabled = false;
+      addButton.ariaBusy = null;
     }
   }
 
@@ -50,6 +52,7 @@ export function setupAdd(
     const notebook = notebooks.find((n) => n.id === select.value);
     if (!notebook) return;
     confirm.disabled = addButton.disabled = true;
+    confirm.ariaBusy = 'true';
     showStatus(
       target.kind === 'video' ? 'Añadiendo el vídeo…' : 'Añadiendo los vídeos de la lista…',
       'info',
@@ -63,6 +66,7 @@ export function setupAdd(
       showStatus(error instanceof Error ? error.message : String(error));
     } finally {
       confirm.disabled = addButton.disabled = false;
+      confirm.ariaBusy = null;
     }
   }
 

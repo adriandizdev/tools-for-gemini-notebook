@@ -6,37 +6,44 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <h1>NotebookLM Tools</h1>
+    <header>
+      <h1>NotebookLM Tools</h1>
+    </header>
 
-    <section id="export-section" hidden>
-      <label class="option">
-        <input type="checkbox" id="include-user" checked />
-        Incluir mensajes del usuario
-      </label>
-      <button id="export">Exportar conversación a PDF</button>
-    </section>
+    <main>
+      <section id="export-section" hidden>
+        <label class="option">
+          <input type="checkbox" id="include-user" checked />
+          Incluir mensajes del usuario
+        </label>
+        <button id="export" class="primary">Exportar conversación a PDF</button>
+      </section>
 
-    <section id="add-section" hidden>
-      <button id="add">Añadir a cuaderno</button>
-      <form id="notebook-form" hidden>
-        <label for="notebook">Cuaderno</label>
-        <select id="notebook" required></select>
-        <button id="confirm" type="submit">Confirmar</button>
-      </form>
-    </section>
+      <section id="add-section" hidden>
+        <button id="add">Añadir a cuaderno</button>
+        <form id="notebook-form" hidden>
+          <label for="notebook">Cuaderno</label>
+          <select id="notebook" required></select>
+          <button id="confirm" class="primary" type="submit">Confirmar</button>
+        </form>
+      </section>
 
-    <section id="documents-section" hidden>
-      <button id="grant" hidden>Permitir buscar documentos</button>
-      <div id="documents" hidden>
-        <label for="documents-notebook">Cuaderno</label>
-        <select id="documents-notebook"></select>
-        <p id="scan-status" role="status" hidden></p>
-        <ul id="document-list"></ul>
-        <button id="add-selected" disabled>Añadir seleccionados</button>
-      </div>
-    </section>
+      <section id="documents-section" hidden>
+        <button id="grant" class="primary" hidden>Permitir buscar documentos</button>
+        <div id="documents" hidden>
+          <label for="documents-notebook">Cuaderno</label>
+          <select id="documents-notebook"></select>
+          <p id="scan-status" role="status" hidden></p>
+          <ul id="document-list"></ul>
+          <button id="add-selected" class="primary" disabled>Añadir seleccionados</button>
+        </div>
+      </section>
 
-    <p id="status" role="status"></p>
+      <footer>
+        <p id="status" role="status"></p>
+      </footer>
+    </main>
+
     <script type="module" src="./main.ts"></script>
   </body>
 </html>
