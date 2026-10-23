@@ -1,6 +1,7 @@
 # Tools for Gemini Notebook
 
 [![CI](https://github.com/adriandizdev/tools-for-gemini-notebook/actions/workflows/ci.yml/badge.svg)](https://github.com/adriandizdev/tools-for-gemini-notebook/actions/workflows/ci.yml)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=448dd395-f4cc-4d08-a8da-edf074d8546f_tools-for-gemini-notebook&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=448dd395-f4cc-4d08-a8da-edf074d8546f_tools-for-gemini-notebook)
 ![Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4?logo=googlechrome&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7-3178C6?logo=typescript&logoColor=white)
 [![Licencia: MIT](https://img.shields.io/badge/licencia-MIT-green.svg)](LICENSE)
@@ -76,6 +77,7 @@ Más detalle en [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Los requisitos d
 ```bash
 npm run dev       # Chrome con la extensión y recarga en caliente
 npm test          # Vitest
+npm run test:coverage  # Vitest con cobertura (coverage/lcov.info, la usa SonarQube Cloud)
 npm run compile   # comprobación de tipos
 npm run lint      # oxlint
 npm run format    # Prettier

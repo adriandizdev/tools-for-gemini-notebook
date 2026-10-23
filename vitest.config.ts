@@ -5,5 +5,10 @@ export default defineConfig({
   plugins: [WxtVitest()],
   test: {
     environment: 'jsdom',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      include: ['utils/**', 'entrypoints/**'],
+    },
   },
 });

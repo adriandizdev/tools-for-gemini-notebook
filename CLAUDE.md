@@ -20,6 +20,7 @@ npm run compile          # comprobación de tipos (tsc --noEmit)
 npm run lint             # oxlint con reglas que usan tipos (.oxlintrc.json)
 npm run format           # Prettier (CI comprueba `npm run format:check`)
 npm test                 # Vitest (entorno jsdom)
+npm run test:coverage    # Vitest con cobertura en coverage/ (lcov para SonarQube Cloud, que se ejecuta en CI)
 npx vitest run utils/extract.test.ts          # un solo archivo de tests
 npx vitest run -t "conserva el HTML"           # un solo test por nombre
 ```

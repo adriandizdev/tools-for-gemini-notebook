@@ -4,3 +4,4 @@ examples
 utils/__fixtures__
 specs
 package-lock.json
+coverage

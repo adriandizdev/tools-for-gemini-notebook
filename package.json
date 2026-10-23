@@ -25,6 +25,7 @@
     "compile": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "postinstall": "wxt prepare",
     "lint": "oxlint --type-aware --deny-warnings",
     "format": "prettier --write .",
@@ -36,6 +37,7 @@
     "katex": "^0.19.0"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^5.0.3",
     "jsdom": "^28.1.0",
     "oxlint": "^1.89.0",
     "oxlint-tsgolint": "^7.0.2004",
