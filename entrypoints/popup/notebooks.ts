@@ -1,12 +1,12 @@
 import { getLastNotebook } from '@/utils/accounts';
-import { NO_NOTEBOOKS } from '@/utils/messages';
+import { NO_NOTEBOOKS } from '@/utils/strings';
 import type { Account } from '@/utils/notebooklm-api';
 import {
   LIST_NOTEBOOKS,
   type ListNotebooksRequest,
   type ListNotebooksResponse,
   type Notebook,
-} from '@/utils/sources';
+} from '@/utils/protocol';
 import type { AccountSession } from './accounts';
 import type { StatusKind } from './main';
 

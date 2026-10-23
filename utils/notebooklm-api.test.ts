@@ -17,7 +17,7 @@ import deleteSources from './__fixtures__/notebooklm-rpc/delete-sources.txt?raw'
 import listNotebooks from './__fixtures__/notebooklm-rpc/list-notebooks.txt?raw';
 import listNotebooksEmpty from './__fixtures__/notebooklm-rpc/list-notebooks-empty.txt?raw';
 import renameSource from './__fixtures__/notebooklm-rpc/rename-source.txt?raw';
-import homeFixture from './__fixtures__/notebooklm-home.html?raw';
+import homeFixture from './__fixtures__/notebooklm-dom/notebooklm-home.html?raw';
 
 const fixtures: Record<string, string> = {
   'add-file.txt': addFile,
@@ -38,7 +38,7 @@ const session = {
   email: 'ana@gmail.com',
   index: 0,
 };
-/** Página de inicio de la cuenta `index` (la forma real está en `__fixtures__/notebooklm-home.html`). */
+/** Página de inicio de la cuenta `index` (la forma real está en `__fixtures__/notebooklm-dom/notebooklm-home.html`). */
 const home = (email: string, index: number) =>
   `<script>window.WIZ_global_data = {"FdrFJe":"123","QrtxK":"${index}","SNlM0e":"AT_TOKEN","cfb2h":"${session.bl}","oPEP7c":"${email}"};</script>`;
 const homeHtml = home(session.email, 0);

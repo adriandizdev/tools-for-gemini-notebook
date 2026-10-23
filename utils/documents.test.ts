@@ -1,7 +1,7 @@
 // @vitest-environment-options { "url": "https://ejemplo.es/curso/" }
 import { describe, expect, it } from 'vitest';
 import { candidateFromTab, candidatesFromScan, documentKind, mergeBySize } from './documents';
-import { scanPage } from './scan-page';
+import { scanPage } from './injected/scan-page';
 
 function scanHtml(html: string) {
   document.body.innerHTML = html;

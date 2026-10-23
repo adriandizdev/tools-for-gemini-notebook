@@ -1,8 +1,8 @@
 import { NOTEBOOK_FULL } from './add-sources';
 import type { DocumentKind } from './documents';
-import * as m from './messages';
+import * as m from './strings';
 import { NotLoggedInError } from './notebooklm-api';
-import type { AddToNotebookResponse, Notebook } from './sources';
+import type { AddToNotebookResponse, Notebook } from './protocol';
 
 /** Estado del cuaderno destino antes de añadir. */
 export interface DocumentNotebookState {

@@ -1,7 +1,7 @@
 /** Reglas para decidir qué documentos de la página se muestran (REQ-002, RN-01 a RN-05 y RN-14). */
 
 import { fileNameFromUrl } from './document-name';
-import type { ScannedItem } from './scan-page';
+import type { ScannedItem } from './injected/scan-page';
 
 export type DocumentKind = 'pdf' | 'word' | 'powerpoint';
 

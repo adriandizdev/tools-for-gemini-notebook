@@ -52,8 +52,8 @@ popup ──mensaje/puerto──▶ background ──▶ reglas puras ──▶ 
 - **Las reglas puras** (`utils/add-sources.ts`, `utils/add-documents.ts`) deciden duplicados, cupo de fuentes, recuentos y qué mensaje mostrar. Reciben el backend como interfaz y se prueban con dobles.
 - **Los backends** implementan esa interfaz sobre `utils/notebooklm-api.ts`, `utils/youtube-playlist.ts` y la descarga de documentos.
 - **YouTube (REQ-001):** las listas se leen de `ytInitialData` (los primeros 100 vídeos) y el resto se pagina con `/youtubei/v1/browse`.
-- **Documentos web (REQ-002):** `utils/scan-page.ts` se inyecta en la página, se filtra y deduplica con `utils/documents.ts`, y los tamaños se piden con `HEAD` (6 en paralelo, 3 s como máximo). El progreso llega por un puerto (`ADD_DOCUMENTS_PORT`).
-- **UNIR (REQ-003):** reutiliza REQ-002. La lista y el enlace de descarga de cada tema salen de la API del visor, que se llama desde `utils/unir-page.ts`, inyectada en la pestaña, para que el token no salga de ella.
+- **Documentos web (REQ-002):** `utils/injected/scan-page.ts` se inyecta en la página, se filtra y deduplica con `utils/documents.ts`, y los tamaños se piden con `HEAD` (6 en paralelo, 3 s como máximo). El progreso llega por un puerto (`ADD_DOCUMENTS_PORT`).
+- **UNIR (REQ-003):** reutiliza REQ-002. La lista y el enlace de descarga de cada tema salen de la API del visor, que se llama desde `utils/injected/unir-page.ts`, inyectada en la pestaña, para que el token no salga de ella.
 
 ## Cuentas (REQ-004)
 
@@ -82,4 +82,4 @@ Las respuestas reales están en `utils/__fixtures__/notebooklm-rpc/`. Si Google 
 
 - Vitest con jsdom (DOMPurify no sanea bien con happy-dom).
 - Los tests de extracción y de RPC usan fixtures capturados de las páginas reales.
-- Los textos al usuario (`utils/messages.ts`) se prueban contra la tabla de mensajes aprobada en cada spec.
+- Los textos al usuario (`utils/strings.ts`) se prueban contra la tabla de mensajes aprobada en cada spec.

@@ -1,30 +1,18 @@
 import type { DocumentStatus } from '@/utils/add-documents';
 import { proposedName, sourceName } from '@/utils/document-name';
-import {
-  type DocumentCandidate,
-  type DocumentKind,
-  candidateFromTab,
-  candidatesFromScan,
-  mergeBySize,
-} from '@/utils/documents';
+import type { DocumentCandidate, DocumentKind } from '@/utils/documents';
 import { ALL_WEBS } from '@/utils/domains';
-import { NO_ACTIONS, SCANNING } from '@/utils/messages';
-import { scanPage } from '@/utils/scan-page';
-import { topicPageUrl, topicsFromResponse, topicsPath } from '@/utils/unir';
-import { callVisorApi } from '@/utils/unir-page';
+import { NO_ACTIONS, SCANNING } from '@/utils/strings';
 import {
   ADD_DOCUMENTS_PORT,
   type AddDocumentsEvent,
   type AddDocumentsRequest,
   type Notebook,
-} from '@/utils/sources';
+} from '@/utils/protocol';
 import type { AccountSession } from './accounts';
+import { type DocumentsPage, checkSizes, findDocuments } from './find-documents';
 import type { StatusKind } from './main';
 import { loadNotebooks } from './notebooks';
-
-/** Peticiones de tamaño en paralelo y tiempo máximo de cada una (RN-03, RNF-01). */
-const SIZE_CONCURRENCY = 6;
-const SIZE_TIMEOUT_MS = 3000;
 
 const KIND_LABEL: Record<DocumentKind, string> = {
   pdf: 'PDF',
@@ -43,11 +31,6 @@ interface Row {
   add: HTMLButtonElement;
   state: HTMLParagraphElement;
 }
-
-type DocumentsPage =
-  | { kind: 'web' }
-  | { kind: 'document'; url: string }
-  | { kind: 'unir'; subjectId: string; topicId?: string };
 
 /**
  * Acción "añadir documentos de la página" en cualquier web salvo NotebookLM y YouTube (REQ-002).
@@ -176,73 +159,21 @@ export function setupDocuments(
     port.postMessage(request);
   }
 
-  /** REQ-003: los temas se piden a la API del visor desde la propia página, con su token (SUP-07). */
-  async function findTopics(subjectId: string, topicId?: string): Promise<DocumentCandidate[]> {
-    try {
-      const [injection] = await browser.scripting.executeScript({
-        target: { tabId },
-        func: callVisorApi,
-        args: ['GET', topicsPath(subjectId)],
-      });
-      const result = injection?.result;
-      if (!result || result.status < 200 || result.status >= 300) return []; // SUP-08
-      return topicsFromResponse(result.body, topicId).map((topic) => ({
-        url: topicPageUrl(subjectId, topic.topicId),
-        fileName: topic.title,
-        kind: 'pdf',
-        title: topic.title,
-        unirTopicId: topic.topicId,
-      }));
-    } catch {
-      return [];
-    }
-  }
-
-  async function findDocuments(): Promise<DocumentCandidate[]> {
-    if (page.kind === 'unir') return findTopics(page.subjectId, page.topicId);
-    if (page.kind === 'document') {
-      const candidate = candidateFromTab(page.url);
-      return candidate ? [candidate] : [];
-    }
-    try {
-      const [injection] = await browser.scripting.executeScript({
-        target: { tabId },
-        func: scanPage,
-      });
-      return candidatesFromScan(injection?.result ?? []);
-    } catch {
-      // Páginas en las que el navegador no deja buscar (Chrome Web Store, visores internos…).
-      return [];
-    }
-  }
-
-  /** RN-03 a RN-05: tamaños sin descargar el contenido (RNF-02); se fusionan según llegan. */
-  async function checkSizes(candidates: DocumentCandidate[]) {
-    const sizes = new Map<string, number>();
-    const queue = [...candidates];
-    const worker = async () => {
-      for (let candidate = queue.shift(); candidate; candidate = queue.shift()) {
-        const size = await fetchSize(candidate.url);
-        if (size === undefined) continue;
-        sizes.set(candidate.url, size);
-        const kept = new Set(mergeBySize(candidates, sizes).map((c) => c.url));
-        for (const [url, row] of rows) {
-          // Solo se quitan filas que el usuario aún no ha tocado.
-          if (!kept.has(url) && !row.state.textContent && !row.checkbox.checked) {
-            row.item.remove();
-            rows.delete(url);
-          }
-        }
+  /** RN-03 a RN-05: con cada tamaño, se quitan los duplicados que el usuario aún no ha tocado. */
+  function pruneRows(kept: Set<string>) {
+    for (const [url, row] of rows) {
+      if (!kept.has(url) && !row.state.textContent && !row.checkbox.checked) {
+        row.item.remove();
+        rows.delete(url);
       }
-    };
-    await Promise.all(Array.from({ length: SIZE_CONCURRENCY }, worker));
+    }
   }
 
   async function scan() {
     scanStatus.textContent = SCANNING;
     scanStatus.hidden = false;
     panel.ariaBusy = 'true';
-    const candidates = await findDocuments();
+    const candidates = await findDocuments(tabId, page);
     // RF-05, RNF-01: se muestran ya, sin esperar a los tamaños.
     for (const candidate of candidates) {
       const row = renderRow(candidate);
@@ -251,7 +182,7 @@ export function setupDocuments(
     }
     updateButtons();
     // Los temas de UNIR no tienen dirección de descarga hasta que se piden (REQ-003).
-    if (page.kind !== 'unir') await checkSizes(candidates);
+    if (page.kind !== 'unir') await checkSizes(candidates, pruneRows);
     scanStatus.hidden = true;
     panel.ariaBusy = null;
     if (rows.size) return;
@@ -304,18 +235,4 @@ export function setupDocuments(
       grant.hidden = false;
     })
     .catch((error: unknown) => showStatus(errorText(error)));
-}
-
-async function fetchSize(url: string): Promise<number | undefined> {
-  try {
-    const response = await fetch(url, {
-      method: 'HEAD',
-      credentials: 'omit',
-      signal: AbortSignal.timeout(SIZE_TIMEOUT_MS),
-    });
-    const length = Number(response.headers.get('content-length'));
-    return response.ok && length > 0 ? length : undefined;
-  } catch {
-    return undefined;
-  }
 }

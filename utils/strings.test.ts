@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import * as m from './messages';
+import * as m from './strings';
 
 // Textos literales de la tabla 6.1 de REQ-001 (CA-16).
 describe('mensajes de REQ-001', () => {

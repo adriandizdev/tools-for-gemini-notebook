@@ -5,7 +5,7 @@ import {
   type AddToNotebookResponse,
   type Notebook,
   type SourceTarget,
-} from '@/utils/sources';
+} from '@/utils/protocol';
 import type { AccountSession } from './accounts';
 import type { StatusKind } from './main';
 import { loadNotebooks } from './notebooks';

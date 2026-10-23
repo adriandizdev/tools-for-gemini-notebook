@@ -3,7 +3,7 @@
  * Google: si la extracción deja de encontrar mensajes, actualiza estos valores.
  *
  * Verificados contra notebooklm.google.com el 2026-10-05
- * (ver utils/__fixtures__/notebooklm-chat.html).
+ * (ver utils/__fixtures__/notebooklm-dom/notebooklm-chat.html).
  */
 export const SELECTORS = {
   /** Mensaje escrito por el usuario. */

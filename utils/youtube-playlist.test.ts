@@ -4,9 +4,9 @@ import {
   parseContinuationResponse,
   parsePlaylistHtml,
 } from './youtube-playlist';
-import playlist from './__fixtures__/youtube-playlist.html?raw';
-import playlistContinuation from './__fixtures__/youtube-playlist-continuation.json?raw';
-import playlistLong from './__fixtures__/youtube-playlist-long.html?raw';
+import playlist from './__fixtures__/youtube/youtube-playlist.html?raw';
+import playlistContinuation from './__fixtures__/youtube/youtube-playlist-continuation.json?raw';
+import playlistLong from './__fixtures__/youtube/youtube-playlist-long.html?raw';
 
 const fixtures: Record<string, string> = {
   'youtube-playlist.html': playlist,

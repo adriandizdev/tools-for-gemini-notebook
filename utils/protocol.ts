@@ -1,4 +1,4 @@
-/** Tipos y mensajes compartidos entre el popup y el background para añadir fuentes (REQ-001 a REQ-004). */
+/** Protocolo entre el popup y el background para añadir fuentes: tipos y nombres de los mensajes (REQ-001 a REQ-004). */
 
 import type { DocumentStatus, DocumentToAdd } from './add-documents';
 import type { Account } from './notebooklm-api';

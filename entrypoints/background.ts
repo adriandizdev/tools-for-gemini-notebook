@@ -6,7 +6,7 @@ import {
 import { type DocumentToAdd, addDocuments } from '@/utils/add-documents';
 import { addToNotebook } from '@/utils/add-sources';
 import { createDocumentBackend } from '@/utils/document-backend';
-import { NO_NOTEBOOKS, NOT_LOGGED_IN } from '@/utils/messages';
+import { NO_NOTEBOOKS, NOT_LOGGED_IN } from '@/utils/strings';
 import {
   type Account,
   NotLoggedInError,
@@ -26,9 +26,9 @@ import {
   type ListAccountsResponse,
   type ListNotebooksRequest,
   type ListNotebooksResponse,
-} from '@/utils/sources';
+} from '@/utils/protocol';
 import { TOPIC_NOT_DELIVERED, VISOR_TAB_CLOSED, topicPdfPath, topicPdfUrl } from '@/utils/unir';
-import { type VisorApiResult, callVisorApi } from '@/utils/unir-page';
+import { type VisorApiResult, callVisorApi } from '@/utils/injected/unir-page';
 import { listPlaylistVideos } from '@/utils/youtube-playlist';
 
 // Las llamadas a NotebookLM y YouTube se hacen aquí (con las host permissions y las cookies

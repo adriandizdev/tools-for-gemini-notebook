@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MATH_CLASS, extractConversation } from './extract';
-import fixtureHtml from './__fixtures__/notebooklm-chat.html?raw';
+import fixtureHtml from './__fixtures__/notebooklm-dom/notebooklm-chat.html?raw';
 
 /** Carga un recorte real del DOM de NotebookLM. */
 function loadFixture(): Document {

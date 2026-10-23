@@ -13,7 +13,7 @@ Notas de lo comprobado contra las páginas reales de NotebookLM, YouTube y el vi
 
 ### Cuentas (REQ-004)
 
-Verificado el 2026-10-23 en un navegador con una sola cuenta; el fixture `utils/__fixtures__/notebooklm-home.html` tiene la forma real con datos falsos.
+Verificado el 2026-10-23 en un navegador con una sola cuenta; el fixture `utils/__fixtures__/notebooklm-dom/notebooklm-home.html` tiene la forma real con datos falsos.
 
 - `/?authuser=N` devuelve la página de inicio de la cuenta N. En `WIZ_global_data` vienen el correo (`oPEP7c`), el id de Google (`S06Grb`) y el índice real de la sesión (`QrtxK`).
 - Con un `N` fuera de rango no hay redirección ni error: devuelve la cuenta 0 con `QrtxK` = `"0"`. `listAccounts` sondea 0, 1, 2… y para cuando `QrtxK` no es el pedido o el correo se repite.
@@ -41,7 +41,7 @@ Detalles comprobados:
 
 ## DOM de NotebookLM
 
-`utils/selectors.ts` es el único módulo acoplado al DOM. Selectores verificados el 2026-10-05; `utils/__fixtures__/notebooklm-chat.html` es un recorte real y la base de los tests de extracción.
+`utils/selectors.ts` es el único módulo acoplado al DOM. Selectores verificados el 2026-10-05; `utils/__fixtures__/notebooklm-dom/notebooklm-chat.html` es un recorte real y la base de los tests de extracción.
 
 - NotebookLM renderiza las fórmulas con KaTeX (solo salida HTML) y guarda el LaTeX en el atributo `data-math`. El HTML original ronda los 400 KB por respuesta.
 - Usa `div.paragraph` en lugar de `<p>`, y `<b>` en lugar de encabezados.
@@ -55,7 +55,7 @@ Sin verificar: si los vídeos privados o borrados aparecen en la lista o YouTube
 
 ## API del visor de UNIR
 
-Verificada contra la página real el 2026-10-22 (asignatura 3128028). Solo se llama desde funciones inyectadas en la pestaña del visor (`utils/unir-page.ts`), para que el token no salga de ella (SUP-07).
+Verificada contra la página real el 2026-10-22 (asignatura 3128028). Solo se llama desde funciones inyectadas en la pestaña del visor (`utils/injected/unir-page.ts`), para que el token no salga de ella (SUP-07).
 
 - Las páginas son `/asignaturas/{subjectId}/mis-temas` (listado) y `/asignaturas/{subjectId}/mis-temas/{topicId}` (un tema). Es una SPA de Angular.
 - Los PDF no están enlazados en el DOM, así que `scanPage` de REQ-002 no los encuentra.

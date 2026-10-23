@@ -1,6 +1,6 @@
-import * as m from './messages';
+import * as m from './strings';
 import { NotLoggedInError } from './notebooklm-api';
-import type { AddToNotebookResponse, Notebook, SourceTarget } from './sources';
+import type { AddToNotebookResponse, Notebook, SourceTarget } from './protocol';
 
 /** Estado del cuaderno destino antes de añadir. `null` = Gemini Notebook no lo permite saber. */
 export interface NotebookState {

@@ -1,4 +1,4 @@
-import { NO_ACTIONS } from '@/utils/messages';
+import { NO_ACTIONS } from '@/utils/strings';
 import { classifyTab } from '@/utils/page';
 import { setupAccounts } from './accounts';
 import { setupAdd } from './add';

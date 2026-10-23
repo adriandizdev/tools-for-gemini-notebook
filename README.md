@@ -59,7 +59,7 @@ flowchart LR
 ```
 
 - **La lógica de negocio es pura y se prueba sin navegador.** `utils/add-sources.ts` y `utils/add-documents.ts` deciden duplicados, cupos y mensajes; el acceso a NotebookLM y YouTube se inyecta como interfaz (`SourceBackend`).
-- **Cada sistema externo tiene un único punto de acoplamiento:** el DOM de NotebookLM en `utils/selectors.ts`, su RPC interno en `utils/notebooklm-api.ts` y la API de UNIR en `utils/unir-page.ts`. Cada uno tiene fixtures capturados de la página real.
+- **Cada sistema externo tiene un único punto de acoplamiento:** el DOM de NotebookLM en `utils/selectors.ts`, su RPC interno en `utils/notebooklm-api.ts` y la API de UNIR en `utils/injected/unir-page.ts`. Cada uno tiene fixtures capturados de la página real.
 - **El background hace las llamadas largas**, porque el popup se cierra al perder el foco. El progreso llega por un puerto.
 
 Más detalle en [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Los requisitos de cada funcionalidad (formato EARS, reglas de negocio y mensajes) están en [`specs/`](specs/).
@@ -70,7 +70,7 @@ Más detalle en [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Los requisitos d
 - **Las fórmulas viajan como LaTeX, no como HTML de KaTeX.** NotebookLM guarda el LaTeX en `data-math`. Al renderizarlo de nuevo se evitan desajustes de versión con el CSS, se recupera el MathML y el tamaño baja mucho: unos 400 KB de HTML por respuesta frente al límite de unos 10 MB de `storage.session`.
 - **Ingeniería inversa de NotebookLM.** No tiene API pública: se usan sus RPC `batchexecute` y la subida reanudable de ficheros. Un hallazgo: los vídeos que rechaza **se quedan en el cuaderno como fuentes con error**, así que la extensión las borra después.
 - **Seguridad.** La página de impresión tiene acceso a las APIs de la extensión y recibe HTML externo, así que se sanea siempre. El token del campus de UNIR **nunca sale de la página**: la API se llama solo desde funciones inyectadas en esa pestaña. El acceso a todas las webs es un permiso opcional que se pide solo al usarlo.
-- **Funciones inyectadas autocontenidas.** `scripting.executeScript` serializa la función, así que `utils/scan-page.ts` y `utils/unir-page.ts` no pueden importar nada.
+- **Funciones inyectadas autocontenidas.** `scripting.executeScript` serializa la función, así que `utils/injected/scan-page.ts` y `utils/injected/unir-page.ts` no pueden importar nada.
 
 ## Desarrollo
 

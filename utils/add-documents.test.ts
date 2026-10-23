@@ -6,7 +6,7 @@ import {
   type DocumentToAdd,
   addDocuments,
 } from './add-documents';
-import * as m from './messages';
+import * as m from './strings';
 import { NotLoggedInError } from './notebooklm-api';
 
 const notebook = { id: 'nb1', title: 'Física' };

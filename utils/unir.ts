@@ -2,7 +2,7 @@
 
 import { dig } from './dig';
 import { UNIR_VISOR_HOST } from './domains';
-import type { VisorApiResult } from './unir-page';
+import type { VisorApiResult } from './injected/unir-page';
 
 /** Motivos que se muestran en M-17 cuando el visor no entrega el PDF de un tema (CB-03). */
 export const CAMPUS_SESSION_EXPIRED = 'la sesión del campus ha caducado';

@@ -1,7 +1,7 @@
 import { chooseAccount, getLastAccount, setLastAccount } from '@/utils/accounts';
-import { NOT_LOGGED_IN, accountUnavailable } from '@/utils/messages';
+import { NOT_LOGGED_IN, accountUnavailable } from '@/utils/strings';
 import type { Account } from '@/utils/notebooklm-api';
-import { LIST_ACCOUNTS, type ListAccountsResponse } from '@/utils/sources';
+import { LIST_ACCOUNTS, type ListAccountsResponse } from '@/utils/protocol';
 import type { StatusKind } from './main';
 
 /** Lo que las acciones de importar necesitan de la cuenta activa (REQ-004). */
