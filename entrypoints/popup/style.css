@@ -122,10 +122,6 @@ label {
   cursor: pointer;
 }
 
-#notebook-form {
-  margin-top: var(--space-2);
-}
-
 /* Controles */
 
 button,
@@ -388,6 +384,8 @@ body.empty #status::before {
   animation: pulse 1.2s ease-in-out infinite;
 }
 
+/* La acción de añadir se separa del desplegable igual en YouTube que en documentos. */
+#add,
 #add-selected {
   margin-top: var(--space-2);
 }

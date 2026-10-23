@@ -8,7 +8,7 @@ import {
   mergeBySize,
 } from '@/utils/documents';
 import { ALL_WEBS } from '@/utils/domains';
-import { NO_ACTIONS, NO_NOTEBOOKS, SCANNING } from '@/utils/messages';
+import { NO_ACTIONS, SCANNING } from '@/utils/messages';
 import { scanPage } from '@/utils/scan-page';
 import { topicPageUrl, topicsFromResponse, topicsPath } from '@/utils/unir';
 import { callVisorApi } from '@/utils/unir-page';
@@ -16,12 +16,10 @@ import {
   ADD_DOCUMENTS_PORT,
   type AddDocumentsEvent,
   type AddDocumentsRequest,
-  LIST_NOTEBOOKS,
-  type ListNotebooksResponse,
   type Notebook,
 } from '@/utils/sources';
 import type { StatusKind } from './main';
-import { fillSelect } from './notebooks';
+import { loadNotebooks } from './notebooks';
 
 /** Peticiones de tamaño en paralelo y tiempo máximo de cada una (RN-03, RNF-01). */
 const SIZE_CONCURRENCY = 6;
@@ -170,21 +168,6 @@ export function setupDocuments(
     port.postMessage(request);
   }
 
-  async function loadNotebooks() {
-    try {
-      const response: ListNotebooksResponse = await browser.runtime.sendMessage({
-        type: LIST_NOTEBOOKS,
-      });
-      if (!response.ok) return showStatus(response.message);
-      notebooks = response.notebooks;
-      if (!notebooks.length) return showStatus(NO_NOTEBOOKS);
-      await fillSelect(select, notebooks);
-      updateButtons();
-    } catch (error) {
-      showStatus(errorText(error));
-    }
-  }
-
   /** REQ-003: los temas se piden a la API del visor desde la propia página, con su token (SUP-07). */
   async function findTopics(subjectId: string, topicId?: string): Promise<DocumentCandidate[]> {
     try {
@@ -273,7 +256,10 @@ export function setupDocuments(
   async function run() {
     grant.hidden = true;
     panel.hidden = false;
-    void loadNotebooks();
+    void loadNotebooks(select, showStatus).then((loaded) => {
+      notebooks = loaded;
+      updateButtons();
+    });
     await scan();
   }
 

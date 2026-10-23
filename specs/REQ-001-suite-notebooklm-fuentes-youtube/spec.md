@@ -4,8 +4,8 @@
 |---|---|
 | **ID** | REQ-001 |
 | **Estado** | Cerrado |
-| **Versión** | 1.5 |
-| **Fecha** | 2026-10-21 |
+| **Versión** | 1.6 |
+| **Fecha** | 2026-10-23 |
 | **Depende de** | Ninguno |
 
 ## 1. Contexto
@@ -19,13 +19,13 @@ El producto deja de ser solo un exportador de conversaciones de NotebookLM y pas
 
 - **RF-01** (Estado): Mientras la pestaña activa muestre un vídeo de YouTube, el sistema debe ofrecer en el panel de la extensión la acción "Añadir a cuaderno".
 - **RF-02** (Estado): Mientras la pestaña activa muestre una lista de reproducción de YouTube, el sistema debe ofrecer en el panel de la extensión la acción "Añadir a cuaderno".
-- **RF-03** (Evento): Cuando el usuario elige "Añadir a cuaderno", el sistema debe mostrar la lista de cuadernos existentes del usuario.
+- ~~**RF-03** (Evento): Cuando el usuario elige "Añadir a cuaderno", el sistema debe mostrar la lista de cuadernos existentes del usuario.~~ *(Retirado en v1.6 → RF-17)*
 - **RF-04** (Evento): Cuando el sistema muestra la lista de cuadernos, el sistema debe preseleccionar el último cuaderno al que el usuario añadió una fuente desde la extensión.
 - **RF-05** (Evento): Cuando el usuario confirma el cuaderno destino desde un vídeo, el sistema debe añadir ese vídeo como fuente del cuaderno elegido.
 - **RF-06** (Evento): Cuando el usuario confirma el cuaderno destino desde una lista de reproducción, el sistema debe añadir los vídeos de la lista como fuentes del cuaderno elegido.
 - **RF-07** (Evento): Cuando la adición de fuentes termina correctamente, el sistema debe mostrar un aviso de que se han añadido correctamente.
 - **RF-08** (Ubicuo): El sistema debe seguir ofreciendo la exportación de conversaciones de NotebookLM a PDF.
-- **RF-09** (Evento): Cuando el usuario elige "Añadir a cuaderno", el sistema debe obtener la lista de cuadernos tal como está en NotebookLM en ese momento.
+- ~~**RF-09** (Evento): Cuando el usuario elige "Añadir a cuaderno", el sistema debe obtener la lista de cuadernos tal como está en NotebookLM en ese momento.~~ *(Retirado en v1.6 → RF-18)*
 - **RF-10** (Complejo): Mientras la pestaña activa muestre un vídeo que se reproduce dentro de una lista de reproducción, cuando el usuario confirme el cuaderno destino, el sistema debe añadir únicamente ese vídeo.
 - **RF-11** (Estado): Mientras la pestaña activa muestre YouTube, el sistema debe ocultar en el panel la acción de exportar a PDF.
 - **RF-12** (Estado): Mientras la pestaña activa muestre NotebookLM, el sistema debe ocultar en el panel la acción "Añadir a cuaderno".
@@ -33,6 +33,8 @@ El producto deja de ser solo un exportador de conversaciones de NotebookLM y pas
 - **RF-14** (Evento): Cuando la adición de una lista de reproducción termina con algún vídeo omitido o rechazado, el sistema debe mostrar un resumen con el número de vídeos añadidos, ya presentes y no admitidos.
 - **RF-15** (Evento): Cuando el sistema omite un vídeo porque ya es fuente del cuaderno destino, el sistema debe informar al usuario de que el vídeo ya estaba en el cuaderno.
 - **RF-16** (Estado): Mientras la pestaña activa muestre una página de YouTube o de NotebookLM que no sea un vídeo, una lista de reproducción ni una conversación, el sistema debe mostrar en el panel un mensaje de que no hay acciones disponibles en esa página.
+- **RF-17** (Evento): Cuando el usuario abre el panel en un vídeo o una lista de reproducción, el sistema debe mostrar la lista de cuadernos existentes del usuario junto a la acción "Añadir a cuaderno".
+- **RF-18** (Evento): Cuando el usuario abre el panel en un vídeo o una lista de reproducción, el sistema debe obtener la lista de cuadernos tal como está en NotebookLM en ese momento.
 
 ## 4. Reglas de Negocio
 
@@ -87,17 +89,17 @@ Textos revisados y aprobados por el usuario. Lo que va entre llaves se sustituye
 
 ## 9. Criterios de Aceptación
 
-- **CA-01** → RF-01, RF-03, RF-05, RF-07, RN-02
+- **CA-01** → RF-01, RF-17, RF-05, RF-07, RN-02
   - **Dado** que el usuario tiene al menos un cuaderno y la pestaña activa muestra un vídeo público de YouTube
-  - **Cuando** abre el panel de la extensión, elige "Añadir a cuaderno", selecciona un cuaderno de la lista y confirma
+  - **Cuando** abre el panel de la extensión, selecciona un cuaderno de la lista y pulsa "Añadir a cuaderno"
   - **Entonces** aparece el mensaje M-01 y el vídeo figura como fuente en ese cuaderno y en ningún otro
 - **CA-02** → RF-02, RF-06, RF-07, RN-08
   - **Dado** que la pestaña activa muestra una lista de reproducción de YouTube con 3 vídeos y el cuaderno destino admite al menos 3 fuentes más
-  - **Cuando** el usuario elige "Añadir a cuaderno", selecciona ese cuaderno y confirma
+  - **Cuando** el usuario abre el panel, selecciona ese cuaderno y pulsa "Añadir a cuaderno"
   - **Entonces** aparece el mensaje M-02 y los 3 vídeos figuran en ese cuaderno como 3 fuentes independientes
 - **CA-03** → RF-04, RN-10
   - **Dado** que el usuario añadió una fuente al cuaderno "Física" desde la extensión y después cerró y volvió a abrir el navegador
-  - **Cuando** elige "Añadir a cuaderno" desde otro vídeo
+  - **Cuando** abre el panel desde otro vídeo
   - **Entonces** la lista de cuadernos aparece con "Física" preseleccionado
 - **CA-04** → RF-08, RN-01, RN-09
   - **Dado** que la pestaña activa muestra una conversación de NotebookLM
@@ -105,11 +107,11 @@ Textos revisados y aprobados por el usuario. Lo que va entre llaves se sustituye
   - **Entonces** se ofrece la opción "Incluir mis preguntas" con la última preferencia elegida, y obtiene el PDF con las fórmulas conservadas, usando la misma extensión que ofrece "Añadir a cuaderno" en YouTube y sin haber instalado nada más
 - **CA-05** → RF-10
   - **Dado** que la pestaña activa muestra el segundo vídeo de una lista de reproducción de 5 vídeos
-  - **Cuando** el usuario elige "Añadir a cuaderno", selecciona un cuaderno y confirma
+  - **Cuando** el usuario abre el panel, selecciona un cuaderno y pulsa "Añadir a cuaderno"
   - **Entonces** solo ese vídeo figura como nueva fuente del cuaderno
-- **CA-06** → RF-09, CB-05
+- **CA-06** → RF-18, CB-05
   - **Dado** que el último cuaderno usado era "Física" y el usuario lo ha borrado en NotebookLM
-  - **Cuando** elige "Añadir a cuaderno" desde un vídeo
+  - **Cuando** abre el panel desde un vídeo
   - **Entonces** la lista de cuadernos no incluye "Física" y no hay ningún cuaderno preseleccionado
 - **CA-07** → RN-03, CB-01
   - **Dado** un cuaderno que solo admite 2 fuentes más y una lista de reproducción de 3 vídeos que no están en el cuaderno
@@ -125,12 +127,12 @@ Textos revisados y aprobados por el usuario. Lo que va entre llaves se sustituye
   - **Entonces** aparece el mensaje M-06 con el motivo del error y el cuaderno no tiene ninguna fuente nueva
 - **CA-10** → CB-04
   - **Dado** que el usuario no ha iniciado sesión en NotebookLM y la pestaña activa muestra un vídeo de YouTube
-  - **Cuando** elige "Añadir a cuaderno"
+  - **Cuando** abre el panel
   - **Entonces** aparece el mensaje M-08
 - **CA-11** → RF-11, RF-12, RF-16
   - **Dado** tres pestañas: un vídeo de YouTube, una conversación de NotebookLM y la página de inicio de YouTube
   - **Cuando** el usuario abre el panel de la extensión en cada una
-  - **Entonces** en el vídeo solo aparece "Añadir a cuaderno", en NotebookLM solo aparece la exportación a PDF, y en la página de inicio de YouTube aparece el mensaje M-10
+  - **Entonces** en el vídeo solo aparecen la lista de cuadernos y "Añadir a cuaderno", en NotebookLM solo aparece la exportación a PDF, y en la página de inicio de YouTube aparece el mensaje M-10
 - **CA-12** → RN-04, RN-07, RF-14
   - **Dado** que Gemini Notebook permite saber qué vídeos ya son fuente de un cuaderno, y una lista de 5 vídeos de la que 3 ya son fuente del cuaderno destino
   - **Cuando** el usuario añade la lista a ese cuaderno
@@ -145,7 +147,7 @@ Textos revisados y aprobados por el usuario. Lo que va entre llaves se sustituye
   - **Entonces** aparece el mensaje M-07 y el cuaderno no tiene ninguna fuente nueva
 - **CA-15** → CB-07
   - **Dado** que el usuario ha iniciado sesión y no tiene ningún cuaderno
-  - **Cuando** elige "Añadir a cuaderno" desde un vídeo de YouTube
+  - **Cuando** abre el panel desde un vídeo de YouTube
   - **Entonces** aparece el mensaje M-09
 - **CA-16** → RN-06
   - **Dado** cada situación de la tabla 6.1
@@ -200,6 +202,7 @@ Textos revisados y aprobados por el usuario. Lo que va entre llaves se sustituye
 | Cuaderno | Espacio de trabajo de NotebookLM que agrupa fuentes y conversaciones. |
 | Fuente | Documento o contenido que se añade a un cuaderno para que NotebookLM lo use al responder. |
 | Panel de la extensión | Ventana que se abre al pulsar el icono de la extensión en la barra del navegador. |
+| Confirmar el cuaderno destino | Pulsar "Añadir a cuaderno" con un cuaderno elegido en la lista (RF-05, RF-06, RF-10). |
 | Lista de reproducción | Página de YouTube que muestra una lista de vídeos como tal, sin ninguno reproduciéndose. Un vídeo que se reproduce dentro de una lista cuenta como vídeo (RF-10). |
 
 ## Changelog
@@ -212,3 +215,4 @@ Textos revisados y aprobados por el usuario. Lo que va entre llaves se sustituye
 | 1.3 | 2026-10-12 | Se resuelven PA-14 y PA-15. Se añade RN-07 y SUP-07, y se retira SUP-06. CA-08 y CA-12 quedan condicionados a RN-07. Los textos de la tabla 6.1 quedan aprobados. Estado: Cerrado. |
 | 1.4 | 2026-10-12 | El usuario confirma los supuestos: SUP-01 a SUP-05 y SUP-07 pasan a RN-08 a RN-13. Se añaden CA-17 a CA-19, y CA-02, CA-03 y CA-04 se amplían para cubrir RN-08 a RN-10. |
 | 1.5 | 2026-10-21 | Por REQ-002: se retira RF-13, sustituido por RF-16 (M-10 solo en páginas de YouTube y NotebookLM sin acción), y se retira de *Fuera de Alcance* la exclusión de las webs distintas de YouTube. CA-11 y la tabla 6.1 pasan a citar RF-16. |
+| 1.6 | 2026-10-23 | Se unifica el flujo con REQ-002: la lista de cuadernos se obtiene y se muestra al abrir el panel, junto a la acción "Añadir a cuaderno", que añade directamente sin un paso de confirmación aparte. Se retiran RF-03 y RF-09, sustituidos por RF-17 y RF-18. CA-01 a CA-03, CA-05, CA-06, CA-10, CA-11 y CA-15 se reformulan. Se añade "Confirmar el cuaderno destino" al glosario. |
