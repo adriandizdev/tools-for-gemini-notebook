@@ -4,7 +4,7 @@
 |---|---|
 | **ID** | REQ-001 |
 | **Estado** | Cerrado |
-| **Versión** | 1.6 |
+| **Versión** | 1.7 |
 | **Fecha** | 2026-10-23 |
 | **Depende de** | Ninguno |
 
@@ -13,6 +13,7 @@
 El producto deja de ser solo un exportador de conversaciones de NotebookLM y pasa a ser una única extensión que amplía NotebookLM en general. La primera funcionalidad nueva permite importar fuentes mientras el usuario navega. En concreto, mientras ve YouTube, puede añadir el vídeo o la lista de reproducción como fuente al cuaderno que elija, sin tener que abrir NotebookLM y pegar el enlace a mano.
 
 - **Comportamiento actual**: hoy la extensión solo exporta conversaciones de NotebookLM a PDF y conserva las fórmulas. Para añadir un vídeo de YouTube como fuente, el usuario abre NotebookLM, entra en el cuaderno y pega el enlace del vídeo.
+- **Relación con REQ-004**: la lista de cuadernos es la de la cuenta activa elegida según REQ-004, el último cuaderno usado se recuerda por cuenta y el mensaje de sesión no iniciada es M-19, que sustituye a M-08.
 - **Medida de éxito**: un vídeo público se añade correctamente al cuaderno seleccionado y todos los casos de error descritos en la sección 6 muestran su mensaje sin dejar el cuaderno en un estado parcial.
 
 ## 3. Requisitos Funcionales (Sintaxis EARS)
@@ -20,7 +21,7 @@ El producto deja de ser solo un exportador de conversaciones de NotebookLM y pas
 - **RF-01** (Estado): Mientras la pestaña activa muestre un vídeo de YouTube, el sistema debe ofrecer en el panel de la extensión la acción "Añadir a cuaderno".
 - **RF-02** (Estado): Mientras la pestaña activa muestre una lista de reproducción de YouTube, el sistema debe ofrecer en el panel de la extensión la acción "Añadir a cuaderno".
 - ~~**RF-03** (Evento): Cuando el usuario elige "Añadir a cuaderno", el sistema debe mostrar la lista de cuadernos existentes del usuario.~~ *(Retirado en v1.6 → RF-17)*
-- **RF-04** (Evento): Cuando el sistema muestra la lista de cuadernos, el sistema debe preseleccionar el último cuaderno al que el usuario añadió una fuente desde la extensión.
+- ~~**RF-04** (Evento): Cuando el sistema muestra la lista de cuadernos, el sistema debe preseleccionar el último cuaderno al que el usuario añadió una fuente desde la extensión.~~ *(Retirado en v1.7 → RF-19)*
 - **RF-05** (Evento): Cuando el usuario confirma el cuaderno destino desde un vídeo, el sistema debe añadir ese vídeo como fuente del cuaderno elegido.
 - **RF-06** (Evento): Cuando el usuario confirma el cuaderno destino desde una lista de reproducción, el sistema debe añadir los vídeos de la lista como fuentes del cuaderno elegido.
 - **RF-07** (Evento): Cuando la adición de fuentes termina correctamente, el sistema debe mostrar un aviso de que se han añadido correctamente.
@@ -33,8 +34,10 @@ El producto deja de ser solo un exportador de conversaciones de NotebookLM y pas
 - **RF-14** (Evento): Cuando la adición de una lista de reproducción termina con algún vídeo omitido o rechazado, el sistema debe mostrar un resumen con el número de vídeos añadidos, ya presentes y no admitidos.
 - **RF-15** (Evento): Cuando el sistema omite un vídeo porque ya es fuente del cuaderno destino, el sistema debe informar al usuario de que el vídeo ya estaba en el cuaderno.
 - **RF-16** (Estado): Mientras la pestaña activa muestre una página de YouTube o de NotebookLM que no sea un vídeo, una lista de reproducción ni una conversación, el sistema debe mostrar en el panel un mensaje de que no hay acciones disponibles en esa página.
-- **RF-17** (Evento): Cuando el usuario abre el panel en un vídeo o una lista de reproducción, el sistema debe mostrar la lista de cuadernos existentes del usuario junto a la acción "Añadir a cuaderno".
+- ~~**RF-17** (Evento): Cuando el usuario abre el panel en un vídeo o una lista de reproducción, el sistema debe mostrar la lista de cuadernos existentes del usuario junto a la acción "Añadir a cuaderno".~~ *(Retirado en v1.7 → RF-20)*
 - **RF-18** (Evento): Cuando el usuario abre el panel en un vídeo o una lista de reproducción, el sistema debe obtener la lista de cuadernos tal como está en NotebookLM en ese momento.
+- **RF-19** (Evento): Cuando el sistema muestra la lista de cuadernos, el sistema debe preseleccionar el último cuaderno al que se añadió una fuente desde la cuenta activa (REQ-004 RF-12).
+- **RF-20** (Evento): Cuando el usuario abre el panel en un vídeo o una lista de reproducción, el sistema debe mostrar la lista de cuadernos de la cuenta activa (REQ-004) junto a la acción "Añadir a cuaderno".
 
 ## 4. Reglas de Negocio
 
@@ -57,15 +60,16 @@ El producto deja de ser solo un exportador de conversaciones de NotebookLM y pas
 - **CB-01** (No deseado): Si los vídeos de la lista de reproducción superan las fuentes que aún admite el cuaderno destino, entonces el sistema debe mostrar un mensaje informativo sin añadir ningún vídeo.
 - **CB-02** (No deseado): Si el vídeo ya es fuente del cuaderno destino, entonces el sistema debe dejar el cuaderno sin cambios.
 - **CB-03** (No deseado): Si NotebookLM rechaza la adición de un vídeo, entonces el sistema debe mostrar un mensaje informativo con el motivo del error.
-- **CB-04** (No deseado): Si el usuario no ha iniciado sesión en NotebookLM, entonces el sistema debe mostrar el mensaje "Para añadir fuentes debe iniciar sesión".
+- ~~**CB-04** (No deseado): Si el usuario no ha iniciado sesión en NotebookLM, entonces el sistema debe mostrar el mensaje "Para añadir fuentes debe iniciar sesión".~~ *(Retirado en v1.7 → CB-09)*
 - **CB-05** (No deseado): Si el último cuaderno usado ya no existe, entonces el sistema debe mostrar la lista de cuadernos sin ninguno preseleccionado.
 - **CB-06** (No deseado): Si una lista contiene vídeos que NotebookLM no admite, entonces el sistema debe añadir el resto de vídeos de la lista.
 - **CB-07** (No deseado): Si el usuario no tiene ningún cuaderno, entonces el sistema debe mostrar un mensaje que le indique que cree un cuaderno en Gemini Notebook antes de añadir fuentes.
 - **CB-08** (No deseado): Si no se puede añadir ningún vídeo de una lista, entonces el sistema debe mostrar un mensaje de que no se ha añadido ningún vídeo, con el motivo.
+- **CB-09** (No deseado): Si no hay ninguna cuenta con la sesión iniciada en Gemini Notebook según REQ-004 (RN-01), entonces el sistema debe mostrar el mensaje M-19.
 
 ### 6.1 Mensajes al usuario
 
-Textos revisados y aprobados por el usuario. Lo que va entre llaves se sustituye por el dato real.
+Textos revisados y aprobados por el usuario. Lo que va entre llaves se sustituye por el dato real. M-19 es el de REQ-004.
 
 | ID | Situación | Texto |
 |---|---|---|
@@ -76,9 +80,10 @@ Textos revisados y aprobados por el usuario. Lo que va entre llaves se sustituye
 | M-05 | Lista sin espacio (CB-01) | La lista tiene {n} vídeos nuevos, pero «{cuaderno}» solo admite {m} fuentes más. No se ha añadido ningún vídeo. |
 | M-06 | Vídeo rechazado (CB-03) | No se ha podido añadir el vídeo: {motivo}. |
 | M-07 | Ningún vídeo de la lista añadido (CB-08) | No se ha añadido ningún vídeo de la lista: {motivo}. |
-| M-08 | Sin sesión (CB-04) | Para añadir fuentes debe iniciar sesión. |
+| ~~M-08~~ | ~~Sin sesión (CB-04)~~ | ~~Para añadir fuentes debe iniciar sesión.~~ *(Retirado en v1.7 → M-19)* |
 | M-09 | Sin cuadernos (CB-07) | No tiene ningún cuaderno. Cree uno en Gemini Notebook antes de añadir fuentes. |
 | M-10 | Página sin acciones (RF-16) | No hay acciones disponibles en esta página. |
+| M-19 | Sin sesión (CB-09) | Para importar contenido debe iniciar sesión en Gemini Notebook. |
 
 ## 8. Fuera de Alcance
 
@@ -89,7 +94,7 @@ Textos revisados y aprobados por el usuario. Lo que va entre llaves se sustituye
 
 ## 9. Criterios de Aceptación
 
-- **CA-01** → RF-01, RF-17, RF-05, RF-07, RN-02
+- **CA-01** → RF-01, RF-20, RF-05, RF-07, RN-02
   - **Dado** que el usuario tiene al menos un cuaderno y la pestaña activa muestra un vídeo público de YouTube
   - **Cuando** abre el panel de la extensión, selecciona un cuaderno de la lista y pulsa "Añadir a cuaderno"
   - **Entonces** aparece el mensaje M-01 y el vídeo figura como fuente en ese cuaderno y en ningún otro
@@ -97,7 +102,7 @@ Textos revisados y aprobados por el usuario. Lo que va entre llaves se sustituye
   - **Dado** que la pestaña activa muestra una lista de reproducción de YouTube con 3 vídeos y el cuaderno destino admite al menos 3 fuentes más
   - **Cuando** el usuario abre el panel, selecciona ese cuaderno y pulsa "Añadir a cuaderno"
   - **Entonces** aparece el mensaje M-02 y los 3 vídeos figuran en ese cuaderno como 3 fuentes independientes
-- **CA-03** → RF-04, RN-10
+- **CA-03** → RF-19, RN-10
   - **Dado** que el usuario añadió una fuente al cuaderno "Física" desde la extensión y después cerró y volvió a abrir el navegador
   - **Cuando** abre el panel desde otro vídeo
   - **Entonces** la lista de cuadernos aparece con "Física" preseleccionado
@@ -125,10 +130,10 @@ Textos revisados y aprobados por el usuario. Lo que va entre llaves se sustituye
   - **Dado** que la pestaña activa muestra un vídeo que NotebookLM no admite como fuente
   - **Cuando** el usuario intenta añadirlo a un cuaderno
   - **Entonces** aparece el mensaje M-06 con el motivo del error y el cuaderno no tiene ninguna fuente nueva
-- **CA-10** → CB-04
-  - **Dado** que el usuario no ha iniciado sesión en NotebookLM y la pestaña activa muestra un vídeo de YouTube
-  - **Cuando** abre el panel
-  - **Entonces** aparece el mensaje M-08
+- **CA-10** → CB-09
+  - **Dado** que no hay ninguna cuenta con la sesión iniciada en Gemini Notebook y la pestaña activa muestra un vídeo de YouTube
+  - **Cuando** el usuario abre el panel
+  - **Entonces** aparece el mensaje M-19
 - **CA-11** → RF-11, RF-12, RF-16
   - **Dado** tres pestañas: un vídeo de YouTube, una conversación de NotebookLM y la página de inicio de YouTube
   - **Cuando** el usuario abre el panel de la extensión en cada una
@@ -202,6 +207,7 @@ Textos revisados y aprobados por el usuario. Lo que va entre llaves se sustituye
 | Cuaderno | Espacio de trabajo de NotebookLM que agrupa fuentes y conversaciones. |
 | Fuente | Documento o contenido que se añade a un cuaderno para que NotebookLM lo use al responder. |
 | Panel de la extensión | Ventana que se abre al pulsar el icono de la extensión en la barra del navegador. |
+| Cuenta activa | Cuenta de Google cuyos cuadernos muestra el panel (REQ-004). |
 | Confirmar el cuaderno destino | Pulsar "Añadir a cuaderno" con un cuaderno elegido en la lista (RF-05, RF-06, RF-10). |
 | Lista de reproducción | Página de YouTube que muestra una lista de vídeos como tal, sin ninguno reproduciéndose. Un vídeo que se reproduce dentro de una lista cuenta como vídeo (RF-10). |
 
@@ -216,3 +222,4 @@ Textos revisados y aprobados por el usuario. Lo que va entre llaves se sustituye
 | 1.4 | 2026-10-12 | El usuario confirma los supuestos: SUP-01 a SUP-05 y SUP-07 pasan a RN-08 a RN-13. Se añaden CA-17 a CA-19, y CA-02, CA-03 y CA-04 se amplían para cubrir RN-08 a RN-10. |
 | 1.5 | 2026-10-21 | Por REQ-002: se retira RF-13, sustituido por RF-16 (M-10 solo en páginas de YouTube y NotebookLM sin acción), y se retira de *Fuera de Alcance* la exclusión de las webs distintas de YouTube. CA-11 y la tabla 6.1 pasan a citar RF-16. |
 | 1.6 | 2026-10-23 | Se unifica el flujo con REQ-002: la lista de cuadernos se obtiene y se muestra al abrir el panel, junto a la acción "Añadir a cuaderno", que añade directamente sin un paso de confirmación aparte. Se retiran RF-03 y RF-09, sustituidos por RF-17 y RF-18. CA-01 a CA-03, CA-05, CA-06, CA-10, CA-11 y CA-15 se reformulan. Se añade "Confirmar el cuaderno destino" al glosario. |
+| 1.7 | 2026-10-23 | Por REQ-004 (elegir la cuenta de Google): se retiran RF-04, RF-17 y CB-04, sustituidos por RF-19 (último cuaderno de la cuenta activa), RF-20 (cuadernos de la cuenta activa) y CB-09. M-08 se retira y se sustituye por M-19. CA-01, CA-03 y CA-10 citan los nuevos IDs. Se añade "Cuenta activa" al glosario. |

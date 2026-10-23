@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | **ID** | REQ-002 |
-| **Estado** | Borrador |
-| **Versión** | 1.3 |
-| **Fecha** | 2026-10-22 |
+| **Estado** | Cerrado |
+| **Versión** | 1.5 |
+| **Fecha** | 2026-10-23 |
 | **Depende de** | REQ-001 |
 
 ## 1. Contexto
@@ -13,8 +13,9 @@
 Mientras navega por cualquier web, el usuario de la extensión puede ver los documentos PDF, Word y PowerPoint que contiene la página y añadirlos como fuentes del cuaderno que elija, uno a uno o varios a la vez, con el nombre que prefiera. Así evita tener que descargar cada documento y subirlo a NotebookLM a mano.
 
 - **Comportamiento actual**: en una web que no es YouTube ni NotebookLM, el panel muestra el mensaje M-10 ("No hay acciones disponibles en esta página"). Para añadir un documento de una web como fuente, el usuario lo descarga, abre NotebookLM, entra en el cuaderno y lo sube.
-- **Relación con REQ-001**: este requisito reutiliza la elección del cuaderno destino de REQ-001 y los mensajes M-08, M-09 y M-10. Modifica dos puntos de REQ-001: RF-13, porque M-10 pasa a mostrarse solo en las páginas sin documentos, y la exclusión "Importar como fuente contenido de webs distintas de YouTube" de su sección *Fuera de Alcance*.
-- **Relación con REQ-003**: en el visor de contenidos de UNIR, el listado de temas de REQ-003 sustituye a la búsqueda de documentos de este requisito. REQ-003 reutiliza el permiso de acceso a las webs, las reglas de añadir y los mensajes M-08 a M-18.
+- **Relación con REQ-001**: este requisito reutiliza la elección del cuaderno destino de REQ-001 y los mensajes M-09 y M-10. Modifica dos puntos de REQ-001: RF-13, porque M-10 pasa a mostrarse solo en las páginas sin documentos, y la exclusión "Importar como fuente contenido de webs distintas de YouTube" de su sección *Fuera de Alcance*.
+- **Relación con REQ-003**: en el visor de contenidos de UNIR, el listado de temas de REQ-003 sustituye a la búsqueda de documentos de este requisito. REQ-003 reutiliza el permiso de acceso a las webs, las reglas de añadir y los mensajes M-09 a M-19.
+- **Relación con REQ-004**: la lista de cuadernos es la de la cuenta activa elegida según REQ-004, el último cuaderno usado se recuerda por cuenta y el mensaje de sesión no iniciada es M-19, que sustituye a M-08.
 - **Medida de éxito**: un documento enlazado en una web pública se añade al cuaderno elegido con el nombre editado, y cada caso de error muestra su mensaje sin dejar fuentes a medias.
 
 ## 3. Requisitos Funcionales (Sintaxis EARS)
@@ -30,7 +31,7 @@ Mientras navega por cualquier web, el usuario de la extensión puede ver los doc
 - **RF-09** (Ubicuo): El sistema debe ofrecer una acción "Añadir" junto a cada documento del listado.
 - **RF-10** (Ubicuo): El sistema debe permitir seleccionar varios documentos del listado.
 - **RF-11** (Estado): Mientras haya al menos un documento seleccionado, el sistema debe ofrecer la acción "Añadir seleccionados".
-- **RF-12** (Ubicuo): El sistema debe permitir elegir el cuaderno destino entre los cuadernos existentes del usuario, con las mismas reglas de REQ-001: lista actualizada (RF-09), último cuaderno usado preseleccionado (RF-04, RN-10) y sin preselección si ese cuaderno ya no existe (CB-05).
+- ~~**RF-12** (Ubicuo): El sistema debe permitir elegir el cuaderno destino entre los cuadernos existentes del usuario, con las mismas reglas de REQ-001: lista actualizada (RF-09), último cuaderno usado preseleccionado (RF-04, RN-10) y sin preselección si ese cuaderno ya no existe (CB-05).~~ *(Retirado en v1.4 → RF-23)*
 - **RF-13** (Evento): Cuando el usuario elige "Añadir" en un documento, el sistema debe añadir ese documento al cuaderno destino.
 - **RF-14** (Evento): Cuando el usuario elige "Añadir seleccionados", el sistema debe añadir los documentos seleccionados al cuaderno destino.
 - **RF-15** (Ubicuo): El sistema debe dar a cada fuente nueva el nombre que figura en el listado en el momento de añadirla.
@@ -41,6 +42,7 @@ Mientras navega por cualquier web, el usuario de la extensión puede ver los doc
 - **RF-20** (Estado): Mientras la pestaña activa muestre NotebookLM, YouTube o el visor de contenidos de UNIR, el sistema debe ocultar el listado de documentos.
 - **RF-21** (Estado): Mientras el usuario no haya dado permiso a la extensión para acceder a las webs, el sistema debe ofrecer en el panel la acción "Permitir buscar documentos" en lugar del listado.
 - **RF-22** (Evento): Cuando el usuario concede el permiso para acceder a las webs, el sistema debe buscar los documentos de la página.
+- **RF-23** (Ubicuo): El sistema debe permitir elegir el cuaderno destino entre los cuadernos de la cuenta activa, con las reglas de REQ-001 y REQ-004: lista actualizada (REQ-001 RF-18), último cuaderno usado de la cuenta activa preseleccionado (REQ-004 RF-12, REQ-001 RN-10) y sin preselección si ese cuaderno ya no existe (REQ-001 CB-05).
 
 ## 4. Reglas de Negocio
 
@@ -75,18 +77,19 @@ Mientras navega por cualquier web, el usuario de la extensión puede ver los doc
 - **CB-03** (No deseado): Si no se puede acceder a un documento (exige iniciar sesión en esa web, no existe o la web lo deniega), entonces el sistema debe mostrar en su estado el mensaje M-17 con el motivo.
 - **CB-04** (No deseado): Si NotebookLM rechaza un documento, entonces el sistema debe mostrar en su estado el mensaje M-17 con el motivo.
 - **CB-05** (No deseado): Si no se puede añadir ninguno de los documentos seleccionados, entonces el sistema debe mostrar el mensaje M-18 con el motivo.
-- **CB-06** (No deseado): Si el usuario no ha iniciado sesión en NotebookLM, entonces el sistema debe mostrar el mensaje M-08.
+- ~~**CB-06** (No deseado): Si el usuario no ha iniciado sesión en NotebookLM, entonces el sistema debe mostrar el mensaje M-08.~~ *(Retirado en v1.4 → CB-10)*
 - **CB-07** (No deseado): Si el usuario no tiene ningún cuaderno, entonces el sistema debe mostrar el mensaje M-09.
 - **CB-08** (No deseado): Si la búsqueda termina sin encontrar ningún documento, entonces el sistema debe mostrar el mensaje M-10.
 - **CB-09** (No deseado): Si el usuario deniega el permiso para acceder a las webs, entonces el sistema debe seguir ofreciendo la acción "Permitir buscar documentos".
+- **CB-10** (No deseado): Si no hay ninguna cuenta con la sesión iniciada en Gemini Notebook según REQ-004 (RN-01), entonces el sistema debe mostrar el mensaje M-19.
 
 ### 6.1 Mensajes al usuario
 
-Textos aprobados por el usuario. Lo que va entre llaves se sustituye por el dato real. M-08, M-09 y M-10 son los de REQ-001, sin cambios.
+Textos aprobados por el usuario. Lo que va entre llaves se sustituye por el dato real. M-09 y M-10 son los de REQ-001 y M-19 el de REQ-004, sin cambios.
 
 | ID | Situación | Texto |
 |---|---|---|
-| M-08 | Sin sesión (CB-06) | Para añadir fuentes debe iniciar sesión. |
+| ~~M-08~~ | ~~Sin sesión (CB-06)~~ | ~~Para añadir fuentes debe iniciar sesión.~~ *(Retirado en v1.4 → M-19)* |
 | M-09 | Sin cuadernos (CB-07) | No tiene ningún cuaderno. Cree uno en Gemini Notebook antes de añadir fuentes. |
 | M-10 | Página sin documentos (CB-08) | No hay acciones disponibles en esta página. |
 | M-11 | Búsqueda en curso (RF-06) | Buscando documentos en la página… |
@@ -97,6 +100,7 @@ Textos aprobados por el usuario. Lo que va entre llaves se sustituye por el dato
 | M-16 | La selección no cabe (CB-01) | Ha seleccionado {n} documentos nuevos, pero «{cuaderno}» solo admite {m} fuentes más. Seleccione menos documentos. |
 | M-17 | Documento no añadido (CB-03, CB-04) | No se ha podido añadir el documento: {motivo}. |
 | M-18 | Ningún documento añadido (CB-05) | No se ha añadido ningún documento: {motivo}. |
+| M-19 | Sin sesión (CB-10) | Para importar contenido debe iniciar sesión en Gemini Notebook. |
 
 ## 7. Requisitos No Funcionales
 
@@ -126,7 +130,7 @@ Textos aprobados por el usuario. Lo que va entre llaves se sustituye por el dato
   - **Dado** que la pestaña activa muestra un PDF abierto directamente en el navegador
   - **Cuando** el usuario abre el panel
   - **Entonces** ese PDF aparece en el listado
-- **CA-04** → RF-09, RF-12, RF-13, RF-15, RF-16, RF-17, RN-11
+- **CA-04** → RF-09, RF-23, RF-13, RF-15, RF-16, RF-17, RN-11
   - **Dado** que el usuario tiene al menos un cuaderno y el listado muestra un PDF
   - **Cuando** elige el cuaderno destino y pulsa "Añadir" en ese PDF
   - **Entonces** el estado del PDF pasa a "añadiendo" y después a "añadido", aparece el mensaje M-12 y el PDF figura en ese cuaderno como una fuente con el nombre del listado
@@ -202,16 +206,16 @@ Textos aprobados por el usuario. Lo que va entre llaves se sustituye por el dato
   - **Dado** dos pestañas: un vídeo de YouTube y una conversación de NotebookLM, ambas con enlaces a documentos PDF
   - **Cuando** el usuario abre el panel en cada una
   - **Entonces** en ninguna aparece el listado de documentos
-- **CA-23** → CB-06
-  - **Dado** que el usuario no ha iniciado sesión en NotebookLM y el listado muestra un documento
-  - **Cuando** intenta añadirlo
-  - **Entonces** aparece el mensaje M-08
+- **CA-23** → CB-10
+  - **Dado** que no hay ninguna cuenta con la sesión iniciada en Gemini Notebook y la pestaña activa muestra una web con documentos
+  - **Cuando** el usuario abre el panel
+  - **Entonces** aparece el mensaje M-19
 - **CA-24** → CB-07
   - **Dado** que el usuario ha iniciado sesión y no tiene ningún cuaderno
   - **Cuando** intenta añadir un documento del listado
   - **Entonces** aparece el mensaje M-09
-- **CA-25** → RF-12
-  - **Dado** que el último cuaderno al que el usuario añadió una fuente desde la extensión es "Física"
+- **CA-25** → RF-23
+  - **Dado** que el último cuaderno al que el usuario añadió una fuente desde la cuenta activa es "Física"
   - **Cuando** va a añadir un documento del listado
   - **Entonces** "Física" aparece preseleccionado como cuaderno destino
 - **CA-26** → RN-13
@@ -245,7 +249,7 @@ Textos aprobados por el usuario. Lo que va entre llaves se sustituye por el dato
 
 ## 10. Supuestos y Preguntas Abiertas
 
-**Supuestos**
+**Supuestos** (SUP-02 a SUP-07 confirmados por el usuario en v1.5)
 - ~~**SUP-01**: Gemini Notebook admite PDF, Word y PowerPoint como fuente. Si rechaza alguno de estos formatos, se aplica CB-04.~~ *(Confirmado en v1.2 solo para los formatos actuales → RN-01)*
 - **SUP-02**: El cuaderno destino se elige una sola vez en el panel y se aplica tanto a "Añadir" como a "Añadir seleccionados".
 - **SUP-03**: Para el límite de CB-01 solo cuentan los documentos seleccionados que todavía no están en el cuaderno, como en REQ-001 (RN-12).
@@ -280,3 +284,5 @@ Textos aprobados por el usuario. Lo que va entre llaves se sustituye por el dato
 | 1.1 | 2026-10-21 | Se resuelven PA-01 a PA-04. Se añaden RF-21, RF-22 (permiso para acceder a las webs), RN-14 a RN-16, CB-09 y CA-27 a CA-30. CA-26 amplía su alcance a los CA nuevos. |
 | 1.2 | 2026-10-21 | Verificado contra Gemini Notebook: solo admite los formatos actuales de Word y PowerPoint. RN-01 se concreta, SUP-01 queda confirmado en parte y se añade CA-31. |
 | 1.3 | 2026-10-22 | Relación con REQ-003: RF-20 también oculta el listado en el visor de contenidos de UNIR, la exclusión de campus virtuales remite a REQ-003 y se añade CA-32. CA-26 amplía su alcance a CA-32. |
+| 1.4 | 2026-10-23 | Por REQ-004 (elegir la cuenta de Google): se retiran RF-12 y CB-06, sustituidos por RF-23 (cuadernos de la cuenta activa, con referencias a REQ-001 v1.7) y CB-10. M-08 se retira y se sustituye por M-19. CA-04, CA-23 y CA-25 se ajustan. |
+| 1.5 | 2026-10-23 | El usuario confirma SUP-02 a SUP-07. Estado: Cerrado. |

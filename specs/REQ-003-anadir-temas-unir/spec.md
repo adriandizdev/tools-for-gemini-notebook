@@ -4,8 +4,8 @@
 |---|---|
 | **ID** | REQ-003 |
 | **Estado** | Cerrado |
-| **Versión** | 1.2 |
-| **Fecha** | 2026-10-22 |
+| **Versión** | 1.3 |
+| **Fecha** | 2026-10-23 |
 | **Depende de** | REQ-002 |
 
 ## 1. Contexto
@@ -13,7 +13,8 @@
 Un estudiante de UNIR que consulta el material de una asignatura en el visor de contenidos del campus puede añadir el PDF de cada tema como fuente del cuaderno que elija, uno a uno o todos a la vez, sin descargarlos y subirlos a mano. En la página de la asignatura ve todos sus temas y en la página de un tema, solo ese tema.
 
 - **Comportamiento actual**: el visor no enlaza los PDF de los temas en la página; solo los entrega tras pulsar su icono de descarga, con la sesión del campus iniciada. Por eso la búsqueda de documentos de REQ-002 no encuentra ninguno y el panel muestra M-10. Para añadir un tema como fuente, el estudiante lo descarga, abre NotebookLM, entra en el cuaderno y lo sube.
-- **Relación con REQ-002**: este requisito reutiliza el permiso de acceso a las webs, la elección del cuaderno destino, las reglas de añadir (duplicados, cupo, fallos sueltos, cierre del panel) y los mensajes M-08 a M-18. En el visor de UNIR, el listado de temas sustituye a la búsqueda de documentos de REQ-002. También cubre en parte una exclusión de REQ-002 (*Fuera de Alcance*: "campus virtuales"). REQ-002 v1.3 recoge estos cambios.
+- **Relación con REQ-002**: este requisito reutiliza el permiso de acceso a las webs, la elección del cuaderno destino, las reglas de añadir (duplicados, cupo, fallos sueltos, cierre del panel) y los mensajes M-09 a M-19. En el visor de UNIR, el listado de temas sustituye a la búsqueda de documentos de REQ-002. También cubre en parte una exclusión de REQ-002 (*Fuera de Alcance*: "campus virtuales"). REQ-002 v1.3 recoge estos cambios.
+- **Relación con REQ-004**: la lista de cuadernos es la de la cuenta activa elegida según REQ-004, el último cuaderno usado se recuerda por cuenta y el mensaje de sesión no iniciada es M-19, que sustituye a M-08.
 - **Medida de éxito**: los temas de una asignatura del visor de UNIR quedan como fuentes del cuaderno elegido con una sola acción, cada uno con el título del tema como nombre.
 
 ## 3. Requisitos Funcionales (Sintaxis EARS)
@@ -28,7 +29,7 @@ Un estudiante de UNIR que consulta el material de una asignatura en el visor de 
 - **RF-08** (Ubicuo): El sistema debe permitir editar el nombre de cada tema del listado antes de añadirlo.
 - **RF-09** (Ubicuo): El sistema debe ofrecer una acción "Añadir" junto a cada tema del listado.
 - **RF-10** (Estado): Mientras haya al menos un tema seleccionado, el sistema debe ofrecer la acción "Añadir seleccionados".
-- **RF-11** (Ubicuo): El sistema debe permitir elegir el cuaderno destino con las mismas reglas de REQ-002 (RF-12): cuadernos existentes del usuario, último cuaderno usado preseleccionado y sin preselección si ese cuaderno ya no existe.
+- ~~**RF-11** (Ubicuo): El sistema debe permitir elegir el cuaderno destino con las mismas reglas de REQ-002 (RF-12): cuadernos existentes del usuario, último cuaderno usado preseleccionado y sin preselección si ese cuaderno ya no existe.~~ *(Retirado en v1.3 → RF-21)*
 - **RF-12** (Evento): Cuando el usuario elige "Añadir" en un tema, el sistema debe añadir el PDF de ese tema al cuaderno destino.
 - **RF-13** (Evento): Cuando el usuario elige "Añadir seleccionados", el sistema debe añadir los PDF de los temas seleccionados al cuaderno destino.
 - **RF-14** (Ubicuo): El sistema debe dar a cada fuente nueva el nombre que figura en el listado en el momento de añadirla.
@@ -38,6 +39,7 @@ Un estudiante de UNIR que consulta el material de una asignatura en el visor de 
 - **RF-18** (Evento): Cuando "Añadir seleccionados" termina con algún tema ya presente o no añadido, el sistema debe mostrar el mensaje M-14.
 - **RF-19** (Estado): Mientras el usuario no haya concedido el permiso de acceso a las webs de REQ-002, el sistema debe ofrecer en el panel la acción "Permitir buscar documentos" en lugar del listado de temas.
 - **RF-20** (Evento): Cuando el usuario concede el permiso de acceso a las webs desde el visor de UNIR, el sistema debe mostrar el listado de temas.
+- **RF-21** (Ubicuo): El sistema debe permitir elegir el cuaderno destino con las mismas reglas de REQ-002 (RF-23): cuadernos de la cuenta activa, último cuaderno usado de esa cuenta preseleccionado y sin preselección si ese cuaderno ya no existe.
 
 ## 4. Reglas de Negocio
 
@@ -58,18 +60,19 @@ Un estudiante de UNIR que consulta el material de una asignatura en el visor de 
 - **CB-03** (No deseado): Si no se puede obtener el PDF de un tema (por ejemplo, porque la sesión del campus ha caducado), entonces el sistema debe mostrar en su estado el mensaje M-17 con el motivo.
 - **CB-04** (No deseado): Si NotebookLM rechaza el PDF de un tema, entonces el sistema debe mostrar en su estado el mensaje M-17 con el motivo.
 - **CB-05** (No deseado): Si no se puede añadir ninguno de los temas seleccionados, entonces el sistema debe mostrar el mensaje M-18 con el motivo.
-- **CB-06** (No deseado): Si el usuario no ha iniciado sesión en NotebookLM, entonces el sistema debe mostrar el mensaje M-08.
+- ~~**CB-06** (No deseado): Si el usuario no ha iniciado sesión en NotebookLM, entonces el sistema debe mostrar el mensaje M-08.~~ *(Retirado en v1.3 → CB-10)*
 - **CB-07** (No deseado): Si el usuario no tiene ningún cuaderno, entonces el sistema debe mostrar el mensaje M-09.
 - **CB-08** (No deseado): Si la asignatura no tiene ningún tema, entonces el sistema debe mostrar el mensaje M-10.
 - **CB-09** (No deseado): Si el usuario deniega el permiso de acceso a las webs, entonces el sistema debe seguir ofreciendo la acción "Permitir buscar documentos".
+- **CB-10** (No deseado): Si no hay ninguna cuenta con la sesión iniciada en Gemini Notebook según REQ-004 (RN-01), entonces el sistema debe mostrar el mensaje M-19.
 
 ### 6.1 Mensajes al usuario
 
-Son los textos aprobados en REQ-002, sin cambios. Lo que va entre llaves se sustituye por el dato real.
+Son los textos aprobados en REQ-002 y, en el caso de M-19, en REQ-004, sin cambios. Lo que va entre llaves se sustituye por el dato real.
 
 | ID | Situación | Texto |
 |---|---|---|
-| M-08 | Sin sesión en NotebookLM (CB-06) | Para añadir fuentes debe iniciar sesión. |
+| ~~M-08~~ | ~~Sin sesión en NotebookLM (CB-06)~~ | ~~Para añadir fuentes debe iniciar sesión.~~ *(Retirado en v1.3 → M-19)* |
 | M-09 | Sin cuadernos (CB-07) | No tiene ningún cuaderno. Cree uno en Gemini Notebook antes de añadir fuentes. |
 | M-10 | Asignatura sin temas (CB-08) | No hay acciones disponibles en esta página. |
 | M-11 | Obteniendo los temas (RF-03) | Buscando documentos en la página… |
@@ -80,6 +83,7 @@ Son los textos aprobados en REQ-002, sin cambios. Lo que va entre llaves se sust
 | M-16 | La selección no cabe (CB-01) | Ha seleccionado {n} documentos nuevos, pero «{cuaderno}» solo admite {m} fuentes más. Seleccione menos documentos. |
 | M-17 | Tema no añadido (CB-03, CB-04) | No se ha podido añadir el documento: {motivo}. |
 | M-18 | Ningún tema añadido (CB-05) | No se ha añadido ningún documento: {motivo}. |
+| M-19 | Sin sesión (CB-10) | Para importar contenido debe iniciar sesión en Gemini Notebook. |
 
 ## 8. Fuera de Alcance
 
@@ -104,7 +108,7 @@ Son los textos aprobados en REQ-002, sin cambios. Lo que va entre llaves se sust
   - **Dado** la página de un tema del visor que contiene enlaces a otras webs y un vídeo de YouTube incrustado
   - **Cuando** el usuario abre el panel
   - **Entonces** el listado muestra solo el tema y no aparece ningún documento ni enlace de la página
-- **CA-04** → RF-09, RF-11, RF-12, RF-14, RF-15, RF-16, RN-01, RN-02
+- **CA-04** → RF-09, RF-21, RF-12, RF-14, RF-15, RF-16, RN-01, RN-02
   - **Dado** que el usuario tiene al menos un cuaderno y el listado muestra el Tema 1
   - **Cuando** elige el cuaderno destino y pulsa "Añadir" en el Tema 1
   - **Entonces** el estado del tema pasa a "añadiendo" y después a "añadido", aparece el mensaje M-12 y el cuaderno tiene una fuente nueva con el PDF completo del Tema 1 y el nombre del listado
@@ -144,10 +148,10 @@ Son los textos aprobados en REQ-002, sin cambios. Lo que va entre llaves se sust
   - **Dado** una selección de 2 temas, ninguno de los cuales se puede añadir
   - **Cuando** el usuario pulsa "Añadir seleccionados"
   - **Entonces** aparece el mensaje M-18 con el motivo y el cuaderno no tiene ninguna fuente nueva
-- **CA-14** → CB-06
-  - **Dado** que el usuario no ha iniciado sesión en NotebookLM y el listado muestra un tema
-  - **Cuando** intenta añadirlo
-  - **Entonces** aparece el mensaje M-08
+- **CA-14** → CB-10
+  - **Dado** que no hay ninguna cuenta con la sesión iniciada en Gemini Notebook y la pestaña activa muestra la página de una asignatura del visor de UNIR
+  - **Cuando** el usuario abre el panel
+  - **Entonces** aparece el mensaje M-19
 - **CA-15** → CB-07
   - **Dado** que el usuario ha iniciado sesión en NotebookLM y no tiene ningún cuaderno
   - **Cuando** intenta añadir un tema del listado
@@ -168,8 +172,8 @@ Son los textos aprobados en REQ-002, sin cambios. Lo que va entre llaves se sust
   - **Dado** que el usuario concedió el permiso de acceso a las webs al buscar documentos en otra web
   - **Cuando** abre el panel en la página de una asignatura del visor de UNIR
   - **Entonces** aparece directamente el listado de temas, sin la acción "Permitir buscar documentos"
-- **CA-20** → RF-11
-  - **Dado** que el último cuaderno al que el usuario añadió una fuente desde la extensión es "Reutilización"
+- **CA-20** → RF-21
+  - **Dado** que el último cuaderno al que el usuario añadió una fuente desde la cuenta activa es "Reutilización"
   - **Cuando** va a añadir un tema del listado
   - **Entonces** "Reutilización" aparece preseleccionado como cuaderno destino
 - **CA-21** → RN-09
@@ -214,3 +218,4 @@ Son los textos aprobados en REQ-002, sin cambios. Lo que va entre llaves se sust
 | 1.0 | 2026-10-22 | Versión inicial. |
 | 1.1 | 2026-10-22 | Se resuelven PA-01 (REQ-002 actualizado a v1.3) y PA-02 (sin acción de seleccionar todos, que pasa a *Fuera de Alcance*). |
 | 1.2 | 2026-10-22 | El usuario confirma SUP-01 a SUP-09. Estado: Cerrado. |
+| 1.3 | 2026-10-23 | Por REQ-004 (elegir la cuenta de Google): se retiran RF-11 y CB-06, sustituidos por RF-21 (cuadernos de la cuenta activa) y CB-10. M-08 se retira y se sustituye por M-19. CA-04, CA-14 y CA-20 se ajustan. |
