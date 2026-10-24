@@ -4,8 +4,11 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Sin publicar]
 
+## [1.1.0] - 2026-10-23
+
 ### Añadido
 
+- Iconos de la extensión.
 - Elegir la cuenta de Google con la que se importa: botón de avatar y cuadro de cuentas cuando hay varias con la sesión iniciada (REQ-004).
 
 ### Cambiado

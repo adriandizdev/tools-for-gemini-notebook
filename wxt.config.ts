@@ -4,8 +4,10 @@ import { ALL_WEBS, NOTEBOOKLM_MATCHES, YOUTUBE_MATCHES } from './utils/domains';
 export default defineConfig({
   manifest: {
     name: 'Tools for Gemini Notebook',
+    // La Chrome Web Store admite como máximo 132 caracteres.
     description:
-      'Amplía Gemini Notebook (NotebookLM): exporta conversaciones a PDF conservando las fórmulas y añade como fuentes vídeos de YouTube, documentos de cualquier web y temas del visor de UNIR.',
+      'Exporta chats de Gemini Notebook (NotebookLM) a PDF con fórmulas y añade fuentes de YouTube, webs y UNIR.',
+    homepage_url: 'https://github.com/adriandizdev/tools-for-gemini-notebook',
     // `activeTab` da la URL de la pestaña al abrir el panel y deja buscar en ella con `scripting`.
     permissions: ['storage', 'activeTab', 'scripting'],
     // Permiten leer la URL de la pestaña activa en estas páginas (el popup elige así sus acciones)

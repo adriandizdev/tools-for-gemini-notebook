@@ -62,7 +62,7 @@ flowchart LR
 - **Cada sistema externo tiene un único punto de acoplamiento:** el DOM de NotebookLM en `utils/selectors.ts`, su RPC interno en `utils/notebooklm-api.ts` y la API de UNIR en `utils/injected/unir-page.ts`. Cada uno tiene fixtures capturados de la página real.
 - **El background hace las llamadas largas**, porque el popup se cierra al perder el foco. El progreso llega por un puerto.
 
-Más detalle en [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Los requisitos de cada funcionalidad (formato EARS, reglas de negocio y mensajes) están en [`specs/`](specs/).
+Más detalle en [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Los textos de la ficha de la Chrome Web Store están en [`docs/STORE.md`](docs/STORE.md). Los requisitos de cada funcionalidad (formato EARS, reglas de negocio y mensajes) están en [`specs/`](specs/).
 
 ## Decisiones técnicas y retos
 
