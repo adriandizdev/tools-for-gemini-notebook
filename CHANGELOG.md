@@ -4,6 +4,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Sin publicar]
 
+## [1.2.0] - 2026-10-31
+
+### Añadido
+
+- Detectar los PDF que una página muestra sin enlazarlos ni incrustarlos, a partir de la URL de la pestaña y de las peticiones de la página (REQ-002).
+
 ## [1.1.0] - 2026-10-23
 
 ### Añadido
