@@ -33,8 +33,14 @@ export const EXTENSION_BY_KIND: Record<DocumentKind, string> = {
   powerpoint: 'pptx',
 };
 
-/** Parámetros con los que los visores (Google Docs, PDF.js…) reciben el documento que muestran. */
-const VIEWER_PARAMS = ['url', 'file', 'src'];
+/**
+ * Parámetros habituales de los visores, los únicos en los que se acepta una dirección relativa
+ * (`?file=/a.pdf`): en otro parámetro, un valor como `a.pdf` puede ser solo un nombre.
+ */
+const RELATIVE_URL_PARAMS = ['url', 'file', 'src'];
+
+const isAbsoluteDocumentUrl = (value: string) =>
+  /^https?:\/\//i.test(value) && documentKind(value) !== null;
 
 export function normalizeUrl(url: string): string | null {
   try {
@@ -59,37 +65,79 @@ export function documentKind(url: string): DocumentKind | null {
   return extension ? (KIND_BY_EXTENSION[extension] ?? null) : null;
 }
 
-/** Si `url` es un visor que muestra otro documento, devuelve la dirección de ese documento. */
-function viewedDocument(url: string): string | null {
+interface ViewedDocument {
+  url: string;
+  title?: string;
+}
+
+/** Primer documento de un JSON, con el `name` o `title` del objeto que lo contiene. */
+function documentInJson(value: unknown): ViewedDocument | null {
+  if (typeof value !== 'object' || value === null) return null;
+  const record = value as Record<string, unknown>;
+  const fields = Object.values(record);
+  const url = fields.find(
+    (field): field is string => typeof field === 'string' && isAbsoluteDocumentUrl(field),
+  );
+  if (url) {
+    const title = [record.name, record.title].find(
+      (field): field is string => typeof field === 'string' && field.trim() !== '',
+    );
+    return title ? { url, title: title.trim() } : { url };
+  }
+  for (const field of fields) {
+    const found = documentInJson(field);
+    if (found) return found;
+  }
+  return null;
+}
+
+/** Si `url` es un visor que muestra otro documento, devuelve ese documento. */
+function viewedDocument(url: string): ViewedDocument | null {
   let parsed: URL;
   try {
     parsed = new URL(url);
   } catch {
     return null;
   }
-  for (const param of VIEWER_PARAMS) {
+  for (const param of RELATIVE_URL_PARAMS) {
     const value = parsed.searchParams.get(param);
     if (!value) continue;
     try {
       const target = new URL(value, parsed).href;
-      if (documentKind(target)) return target;
+      if (documentKind(target)) return { url: target };
     } catch {
       // No es una dirección: se prueba el siguiente parámetro.
+    }
+  }
+  // En cualquier otro parámetro cuenta la forma del valor, no su nombre: una dirección o un JSON.
+  for (const value of parsed.searchParams.values()) {
+    if (isAbsoluteDocumentUrl(value)) return { url: value };
+    if (!/^\s*[{[]/.test(value)) continue;
+    try {
+      const found = documentInJson(JSON.parse(value));
+      if (found) return found;
+    } catch {
+      // No es JSON: se prueba el siguiente parámetro.
     }
   }
   return null;
 }
 
 function toCandidate(item: ScannedItem): DocumentCandidate | null {
-  const target = documentKind(item.url) ? item.url : (viewedDocument(item.url) ?? item.url);
-  const url = normalizeUrl(target);
+  const viewed = documentKind(item.url) ? null : viewedDocument(item.url);
+  const url = normalizeUrl(viewed?.url ?? item.url);
   if (!url) return null;
   // Un PDF incrustado puede no tener extensión, pero sí `type="application/pdf"`.
   const kind =
     documentKind(url) ?? (item.embedded && item.type === 'application/pdf' ? 'pdf' : null);
   // De lo incrustado solo cuentan los PDF (RN-14).
   if (!kind || (item.embedded && kind !== 'pdf')) return null;
-  return { url, fileName: fileNameFromUrl(url), kind };
+  return {
+    url,
+    fileName: fileNameFromUrl(url),
+    kind,
+    ...(viewed?.title ? { title: viewed.title } : {}),
+  };
 }
 
 /** Documentos de la página, cada uno una sola vez por dirección (RN-02), en orden de aparición. */

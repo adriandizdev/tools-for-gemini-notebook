@@ -1,5 +1,5 @@
 // @vitest-environment-options { "url": "https://ejemplo.es/curso/" }
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { candidateFromTab, candidatesFromScan, documentKind, mergeBySize } from './documents';
 import { scanPage } from './injected/scan-page';
 
@@ -75,6 +75,88 @@ describe('búsqueda en la página', () => {
 
   it('ignora lo que no es http(s)', () => {
     expect(scanHtml('<a href="mailto:a@e.es?subject=a.pdf">Correo</a>')).toEqual([]);
+  });
+});
+
+describe('visores que dibujan en canvas (RF-24)', () => {
+  const PDF = 'https://cdn.example/d/1f2e.pdf';
+  const data = { id: 1, name: 'Guía del curso', resource: PDF };
+  const pageWith = (value: string, param = 'datos') => ({
+    url: `https://visor.example/ver?${param}=${encodeURIComponent(value)}`,
+    embedded: false,
+    type: null,
+  });
+
+  function stubRequests(...urls: string[]) {
+    vi.spyOn(performance, 'getEntriesByType').mockReturnValue(
+      urls.map((name) => ({ name }) as PerformanceEntry),
+    );
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    history.replaceState(null, '', '/curso/');
+  });
+
+  it('CA-33 (RN-17): saca el documento y su título del JSON de un parámetro de la URL', () => {
+    expect(candidatesFromScan([pageWith(JSON.stringify(data))])).toEqual([
+      { url: PDF, fileName: '1f2e.pdf', kind: 'pdf', title: 'Guía del curso' },
+    ]);
+  });
+
+  it('no dependen del nombre del parámetro ni de la clave del JSON', () => {
+    const other = JSON.stringify({ titulo: 'x', fichero: PDF });
+    expect(candidatesFromScan([pageWith(other, 'recurso')]).map((d) => d.url)).toEqual([PDF]);
+  });
+
+  it('acepta una dirección absoluta en cualquier parámetro', () => {
+    expect(candidatesFromScan([pageWith(PDF, 'doc')]).map((d) => d.url)).toEqual([PDF]);
+  });
+
+  it('una dirección relativa solo vale en los parámetros de los visores', () => {
+    expect(candidatesFromScan([pageWith('a.pdf', 'nombre')])).toEqual([]);
+    expect(candidatesFromScan([pageWith('/a.pdf', 'file')]).map((d) => d.url)).toEqual([
+      'https://visor.example/a.pdf',
+    ]);
+  });
+
+  it('busca también en los objetos y listas anidados', () => {
+    const nested = JSON.stringify({ data: [{ id: 1 }, { title: 'Otra guía', file: PDF }] });
+    expect(candidatesFromScan([pageWith(nested)])).toMatchObject([
+      { url: PDF, title: 'Otra guía' },
+    ]);
+  });
+
+  it('sin nombre en el JSON no propone título', () => {
+    expect(candidatesFromScan([pageWith(JSON.stringify({ resource: PDF }))])[0]).not.toHaveProperty(
+      'title',
+    );
+  });
+
+  it('un JSON inválido o sin documento no da candidatos', () => {
+    expect(candidatesFromScan([pageWith('{no es json')])).toEqual([]);
+    expect(candidatesFromScan([pageWith('{"resource":"https://e.es/inicio"}')])).toEqual([]);
+    expect(candidatesFromScan([pageWith('{"resource":"ftp://e.es/a.pdf"}')])).toEqual([]);
+  });
+
+  it('una página sin documento en su URL no da candidatos', () => {
+    expect(scanHtml('<canvas></canvas>')).toEqual([]);
+  });
+
+  it('encuentra el documento en la URL de la pestaña', () => {
+    history.replaceState(null, '', `/ver?datos=${encodeURIComponent(JSON.stringify(data))}`);
+    expect(scanHtml('<canvas></canvas>').map((d) => d.url)).toEqual([PDF]);
+  });
+
+  it('CA-34 (RN-14): encuentra el PDF que la página ha pedido; solo cuentan los PDF', () => {
+    stubRequests('https://e.es/a.pdf?v=1', 'https://e.es/b.pptx', 'https://e.es/app.js');
+    expect(scanHtml('').map((d) => d.url)).toEqual(['https://e.es/a.pdf?v=1']);
+  });
+
+  it('RN-02: en la URL y en las peticiones aparece una vez y conserva el título', () => {
+    history.replaceState(null, '', `/ver?datos=${encodeURIComponent(JSON.stringify(data))}`);
+    stubRequests(PDF);
+    expect(scanHtml('')).toMatchObject([{ url: PDF, title: data.name }]);
   });
 });
 

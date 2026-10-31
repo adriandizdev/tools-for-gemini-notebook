@@ -4,8 +4,8 @@
 |---|---|
 | **ID** | REQ-002 |
 | **Estado** | Cerrado |
-| **Versión** | 1.5 |
-| **Fecha** | 2026-10-23 |
+| **Versión** | 1.6 |
+| **Fecha** | 2026-10-31 |
 | **Depende de** | REQ-001 |
 
 ## 1. Contexto
@@ -26,7 +26,7 @@ Mientras navega por cualquier web, el usuario de la extensión puede ver los doc
 - **RF-04** (Estado): Mientras la pestaña activa muestre un PDF abierto directamente en el navegador, el sistema debe incluir ese PDF en el listado.
 - **RF-05** (Evento): Cuando el sistema encuentra un documento, el sistema debe mostrarlo en el listado sin esperar a que termine la búsqueda.
 - **RF-06** (Estado): Mientras la búsqueda de documentos no haya terminado, el sistema debe mostrar el mensaje M-11.
-- **RF-07** (Ubicuo): El sistema debe proponer como nombre de cada documento del listado su nombre de fichero, limpiado según RN-06.
+- **RF-07** (Ubicuo): El sistema debe proponer como nombre de cada documento del listado su nombre de fichero, limpiado según RN-06, salvo en el caso de RN-17.
 - **RF-08** (Ubicuo): El sistema debe permitir editar el nombre de cada documento del listado antes de añadirlo.
 - **RF-09** (Ubicuo): El sistema debe ofrecer una acción "Añadir" junto a cada documento del listado.
 - **RF-10** (Ubicuo): El sistema debe permitir seleccionar varios documentos del listado.
@@ -43,6 +43,7 @@ Mientras navega por cualquier web, el usuario de la extensión puede ver los doc
 - **RF-21** (Estado): Mientras el usuario no haya dado permiso a la extensión para acceder a las webs, el sistema debe ofrecer en el panel la acción "Permitir buscar documentos" en lugar del listado.
 - **RF-22** (Evento): Cuando el usuario concede el permiso para acceder a las webs, el sistema debe buscar los documentos de la página.
 - **RF-23** (Ubicuo): El sistema debe permitir elegir el cuaderno destino entre los cuadernos de la cuenta activa, con las reglas de REQ-001 y REQ-004: lista actualizada (REQ-001 RF-18), último cuaderno usado de la cuenta activa preseleccionado (REQ-004 RF-12, REQ-001 RN-10) y sin preselección si ese cuaderno ya no existe (REQ-001 CB-05).
+- **RF-24** (Ubicuo): El sistema debe incluir en el listado los PDF que la página muestra sin enlazarlos ni incrustarlos, si su dirección figura en la dirección de la pestaña o en las peticiones que ha hecho la página.
 
 ## 4. Reglas de Negocio
 
@@ -69,6 +70,7 @@ Mientras navega por cualquier web, el usuario de la extensión puede ver los doc
 - **RN-14**: De los documentos incrustados en la página solo se buscan los PDF. Los Word y PowerPoint se buscan solo como enlaces.
 - **RN-15**: Un documento ya es fuente del cuaderno destino si el cuaderno tiene una fuente con el mismo nombre que figura en el listado.
 - **RN-16**: Si el usuario cierra el panel, la búsqueda se descarta y los documentos que ya se estaban añadiendo se terminan de añadir.
+- **RN-17**: Si la dirección de la pestaña da un nombre junto a la dirección del documento, ese nombre es el propuesto, sin limpiar.
 
 ## 6. Casos Borde y Comportamientos de Error
 
@@ -246,6 +248,14 @@ Textos aprobados por el usuario. Lo que va entre llaves se sustituye por el dato
   - **Dado** la página de un tema del visor de contenidos de UNIR que contiene enlaces a otras webs
   - **Cuando** el usuario abre el panel
   - **Entonces** no aparece el listado de documentos de la página, sino el listado de temas de REQ-003
+- **CA-33** → RF-24, RN-17
+  - **Dado** una web que muestra un PDF dibujado en la página, sin enlaces ni elementos incrustados, y cuya dirección lleva los datos del documento con su dirección y su nombre
+  - **Cuando** el usuario abre el panel
+  - **Entonces** el listado muestra ese PDF una vez, con ese nombre
+- **CA-34** → RF-24, RN-14
+  - **Dado** una web sin enlaces ni elementos incrustados que ha pedido un PDF y un PowerPoint
+  - **Cuando** el usuario abre el panel
+  - **Entonces** el listado muestra solo el PDF
 
 ## 10. Supuestos y Preguntas Abiertas
 
@@ -271,7 +281,7 @@ Textos aprobados por el usuario. Lo que va entre llaves se sustituye por el dato
 | NotebookLM | Servicio de Google al que se dirige la extensión; ahora se llama Gemini Notebook. En esta spec, los dos nombres son equivalentes. |
 | Cuaderno | Espacio de trabajo de NotebookLM que agrupa fuentes y conversaciones. |
 | Fuente | Documento o contenido que se añade a un cuaderno para que NotebookLM lo use al responder. |
-| Documento | Fichero PDF, Word o PowerPoint enlazado desde una página web, incrustado en ella o abierto directamente en el navegador. |
+| Documento | Fichero PDF, Word o PowerPoint enlazado desde una página web, incrustado en ella, mostrado por ella (RF-24) o abierto directamente en el navegador. |
 | Listado | Relación de los documentos encontrados en la página, que se muestra en el panel de la extensión. |
 | Dirección | Ubicación en la web desde la que se obtiene un documento. |
 | Selección | Conjunto de documentos del listado que el usuario marca para añadirlos de una vez. |
@@ -286,3 +296,4 @@ Textos aprobados por el usuario. Lo que va entre llaves se sustituye por el dato
 | 1.3 | 2026-10-22 | Relación con REQ-003: RF-20 también oculta el listado en el visor de contenidos de UNIR, la exclusión de campus virtuales remite a REQ-003 y se añade CA-32. CA-26 amplía su alcance a CA-32. |
 | 1.4 | 2026-10-23 | Por REQ-004 (elegir la cuenta de Google): se retiran RF-12 y CB-06, sustituidos por RF-23 (cuadernos de la cuenta activa, con referencias a REQ-001 v1.7) y CB-10. M-08 se retira y se sustituye por M-19. CA-04, CA-23 y CA-25 se ajustan. |
 | 1.5 | 2026-10-23 | El usuario confirma SUP-02 a SUP-07. Estado: Cerrado. |
+| 1.6 | 2026-10-31 | Visores que dibujan el PDF en la página: se añaden RF-24, RN-17, CA-33 y CA-34. RF-07 remite a RN-17. |
