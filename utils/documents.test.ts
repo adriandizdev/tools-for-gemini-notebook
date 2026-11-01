@@ -160,6 +160,45 @@ describe('visores que dibujan en canvas (RF-24)', () => {
   });
 });
 
+describe('marcos de la página (RF-25)', () => {
+  const S3 = 'https://s3.example/programacion';
+
+  function scanFrame(html: string, isTopFrame: boolean) {
+    document.body.innerHTML = html;
+    return scanPage(isTopFrame);
+  }
+
+  afterEach(() => {
+    history.replaceState(null, '', '/curso/');
+  });
+
+  it('CA-35: encuentra el PDF de un iframe anidado, sin listar la página intermedia', () => {
+    const items = [
+      ...scanFrame(`<iframe src="${S3}/programacion.html"></iframe>`, true),
+      ...scanFrame(`<iframe src="${S3}/programacion.pdf"></iframe>`, false),
+    ];
+    expect(candidatesFromScan(items).map((d) => d.url)).toEqual([`${S3}/programacion.pdf`]);
+  });
+
+  it('CA-36 (RN-02): el mismo PDF en dos marcos aparece una vez y conserva el título', () => {
+    const pdf = `${S3}/programacion.pdf`;
+    const data = JSON.stringify({ name: 'Programación', resource: pdf });
+    history.replaceState(null, '', `/ver?datos=${encodeURIComponent(data)}`);
+    const items = [...scanFrame('', true), ...scanFrame(`<iframe src="${pdf}"></iframe>`, false)];
+    expect(candidatesFromScan(items)).toMatchObject([{ url: pdf, title: 'Programación' }]);
+    expect(candidatesFromScan(items)).toHaveLength(1);
+  });
+
+  it('un marco no devuelve su dirección, pero sí sus enlaces e incrustados', () => {
+    history.replaceState(null, '', '/ver?file=/oculto.pdf#access_token=secreto');
+    const items = scanFrame('<a href="/a.pdf">A</a><iframe src="/b.pdf"></iframe>', false);
+    expect(items.map((item) => item.url)).toEqual([
+      'https://ejemplo.es/a.pdf',
+      'https://ejemplo.es/b.pdf',
+    ]);
+  });
+});
+
 describe('candidateFromTab (RF-04)', () => {
   it('reconoce un PDF abierto directamente', () => {
     expect(candidateFromTab('https://e.es/a/Guia%20docente.pdf')).toEqual({

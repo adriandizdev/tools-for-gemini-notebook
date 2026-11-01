@@ -4,7 +4,7 @@
 |---|---|
 | **ID** | REQ-002 |
 | **Estado** | Cerrado |
-| **Versión** | 1.6 |
+| **Versión** | 1.7 |
 | **Fecha** | 2026-10-31 |
 | **Depende de** | REQ-001 |
 
@@ -44,6 +44,7 @@ Mientras navega por cualquier web, el usuario de la extensión puede ver los doc
 - **RF-22** (Evento): Cuando el usuario concede el permiso para acceder a las webs, el sistema debe buscar los documentos de la página.
 - **RF-23** (Ubicuo): El sistema debe permitir elegir el cuaderno destino entre los cuadernos de la cuenta activa, con las reglas de REQ-001 y REQ-004: lista actualizada (REQ-001 RF-18), último cuaderno usado de la cuenta activa preseleccionado (REQ-004 RF-12, REQ-001 RN-10) y sin preselección si ese cuaderno ya no existe (REQ-001 CB-05).
 - **RF-24** (Ubicuo): El sistema debe incluir en el listado los PDF que la página muestra sin enlazarlos ni incrustarlos, si su dirección figura en la dirección de la pestaña o en las peticiones que ha hecho la página.
+- **RF-25** (Ubicuo): El sistema debe buscar los documentos también en los marcos de la página, incluidos los anidados y los de otro origen.
 
 ## 4. Reglas de Negocio
 
@@ -256,6 +257,14 @@ Textos aprobados por el usuario. Lo que va entre llaves se sustituye por el dato
   - **Dado** una web sin enlaces ni elementos incrustados que ha pedido un PDF y un PowerPoint
   - **Cuando** el usuario abre el panel
   - **Entonces** el listado muestra solo el PDF
+- **CA-35** → RF-25
+  - **Dado** una web que incrusta una página de otro origen, que a su vez incrusta un PDF
+  - **Cuando** el usuario abre el panel
+  - **Entonces** el listado muestra ese PDF y no la página intermedia
+- **CA-36** → RF-25, RN-02, RN-17
+  - **Dado** una web cuya dirección lleva los datos de un PDF con su nombre, y que además lo incrusta en un marco
+  - **Cuando** el usuario abre el panel
+  - **Entonces** el listado muestra ese PDF una vez, con ese nombre
 
 ## 10. Supuestos y Preguntas Abiertas
 
@@ -297,3 +306,4 @@ Textos aprobados por el usuario. Lo que va entre llaves se sustituye por el dato
 | 1.4 | 2026-10-23 | Por REQ-004 (elegir la cuenta de Google): se retiran RF-12 y CB-06, sustituidos por RF-23 (cuadernos de la cuenta activa, con referencias a REQ-001 v1.7) y CB-10. M-08 se retira y se sustituye por M-19. CA-04, CA-23 y CA-25 se ajustan. |
 | 1.5 | 2026-10-23 | El usuario confirma SUP-02 a SUP-07. Estado: Cerrado. |
 | 1.6 | 2026-10-31 | Visores que dibujan el PDF en la página: se añaden RF-24, RN-17, CA-33 y CA-34. RF-07 remite a RN-17. |
+| 1.7 | 2026-10-31 | Documentos dentro de marcos: se añaden RF-25, CA-35 y CA-36. |

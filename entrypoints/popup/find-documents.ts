@@ -28,11 +28,12 @@ export async function findDocuments(
     return candidate ? [candidate] : [];
   }
   try {
-    const [injection] = await browser.scripting.executeScript({
-      target: { tabId },
+    // El marco principal llega primero: al deduplicar conserva su título.
+    const injections = await browser.scripting.executeScript({
+      target: { tabId, allFrames: true },
       func: scanPage,
     });
-    return candidatesFromScan(injection?.result ?? []);
+    return candidatesFromScan(injections.flatMap((injection) => injection.result ?? []));
   } catch {
     // Páginas en las que el navegador no deja buscar (Chrome Web Store, visores internos…).
     return [];

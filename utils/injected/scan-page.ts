@@ -16,10 +16,13 @@ export interface ScannedItem {
  * popup miles de direcciones; lo incrustado lo devuelve todo porque suele ser poco y puede no
  * tener extensión.
  */
-export function scanPage(): ScannedItem[] {
+export function scanPage(isTopFrame = window === window.top): ScannedItem[] {
   const looksLikeDocument = /\.(pdf|docx|pptx)(?:$|[?#&/])/i;
   // La URL de la pestaña va primero: puede traer el documento y su título, y el primero se queda.
-  const items: ScannedItem[] = [{ url: location.href, embedded: false, type: null }];
+  // La de un marco no se devuelve: puede llevar un token, y su padre ya la da como incrustada.
+  const items: ScannedItem[] = isTopFrame
+    ? [{ url: location.href, embedded: false, type: null }]
+    : [];
 
   for (const link of Array.from(document.querySelectorAll<HTMLAnchorElement>('a[href]'))) {
     if (looksLikeDocument.test(link.href)) {

@@ -2,7 +2,7 @@
   "name": "tools-for-gemini-notebook",
   "description": "Extensión de Chrome que amplía NotebookLM: exporta conversaciones a PDF conservando las fórmulas y añade como fuentes vídeos de YouTube, documentos de cualquier web y temas del campus de UNIR",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.3.0",
   "type": "module",
   "license": "MIT",
   "author": "Adrian DG <adriandizdev@gmail.com>",

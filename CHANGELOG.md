@@ -4,6 +4,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Sin publicar]
 
+## [1.3.0] - 2026-11-01
+
+### Añadido
+
+- Buscar los documentos también dentro de los iframes de la página, incluidos los anidados y los de otro origen (REQ-002).
+
 ## [1.2.0] - 2026-10-31
 
 ### Añadido
